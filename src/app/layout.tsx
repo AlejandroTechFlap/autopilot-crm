@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -21,8 +21,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+    <html lang="en" className={cn("h-full antialiased", inter.variable)}>
+      <body className="min-h-full flex flex-col font-sans">
+        <TooltipProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </TooltipProvider>
+      </body>
     </html>
   );
 }

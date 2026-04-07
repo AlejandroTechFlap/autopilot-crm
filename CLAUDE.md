@@ -1,1 +1,93 @@
 @AGENTS.md
+
+# Autopilot CRM — Project Notes for Claude
+
+> Read this file at the start of every session. It points to the up-to-date specs and
+> summarises project state so you do not have to re-derive context.
+
+## Stack
+
+- **Next.js 16.2.2** App Router (NOT the Next.js you remember — read
+  `node_modules/next/dist/docs/` before coding). `params` is `Promise<{...}>`, must be awaited.
+- **Supabase Cloud** (Postgres + Auth + Realtime + RLS). Generated types live in
+  `src/types/database.ts`.
+- **shadcn/ui** components in `src/components/ui/` — built on **base-ui** (not Radix).
+  `Dialog` is controlled via `open`/`onOpenChange` state, NOT `DialogTrigger render`.
+- **Tailwind v4**, **sonner** toasts, **lucide-react** icons, **zod** validation.
+- **Anthropic SDK** for the AI chat panel and morning summary.
+
+## Document-first workflow
+
+Specs live in `docs/`. Read [`docs/README.md`](./docs/README.md) for the full index.
+Every phase has its own doc (`phase-2-…` through `phase-7-…`). Update the spec **before**
+writing code, mark `[DRAFT]`, implement, then mark `[IMPLEMENTED]`.
+
+## Current state (2026-04-07)
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| 0–1 | Setup, schema (16 tables), RLS, auth, seed | IMPLEMENTED |
+| 2 | Pipeline kanban + company detail | IMPLEMENTED |
+| 3 | Cockpit (vendedor) + Dashboard (dirección) + drill-downs | IMPLEMENTED |
+| 4 | Database (empresas/contactos) + notification engine | IMPLEMENTED |
+| 5 | AI chat + morning summary | IMPLEMENTED |
+| 6 | Cmd+K palette, polish, Docker deploy | IMPLEMENTED |
+| 7 | Admin suite (pipelines, scripts, users, notifications, KPIs) | IMPLEMENTED |
+| 8 | UI/UX polish (loading skeletons, error boundary, not-found page) | IMPLEMENTED |
+| 9 | Empresa task calendar widget | DRAFT |
+| — | Spanish-only UI sweep + glossary (`docs/i18n.md`) | IMPLEMENTED |
+| — | Root redirect moved to proxy (Next.js 16 RootPage perf bug fix) | IMPLEMENTED |
+
+Outstanding work is tracked in [`docs/gap-analysis.md`](./docs/gap-analysis.md) §12.
+The next priority is **Phase 9 (empresa task calendar widget)** —
+see [`docs/phase-9-empresa-task-calendar.md`](./docs/phase-9-empresa-task-calendar.md).
+
+## Roles
+
+- **vendedor** — Cockpit, own deals, own tasks, scripts (read), AI chat. **Cannot create leads** — leads are created and assigned by direccion/admin.
+- **direccion** — Dashboard, all deals, KPIs, drill-downs. Creates and assigns leads. Cannot edit admin config.
+- **admin** — Everything above + `/admin/*` (Phase 7 admin suite).
+
+`requireRole('admin')` is enforced at both the layout and API levels (`requireAdmin()`
+in `src/features/admin/lib/admin-guard.ts`). For the middle tier (admin OR direccion),
+use `requireApiRole('admin', 'direccion')` from `src/lib/api-utils.ts`.
+RLS in Postgres is the second line of defence.
+
+## Routes overview
+
+```
+(auth)/login                     Public
+(dashboard)/pipeline             Vendedor + dirección — kanban
+(dashboard)/empresas             BBDD empresas
+(dashboard)/empresa/[id]         Company detail
+(dashboard)/contactos            BBDD contactos
+(dashboard)/mis-tareas           Vendedor task inbox
+(dashboard)/dashboard            Dirección KPIs + drill-down
+(dashboard)/admin                Admin overview (Phase 7)
+(dashboard)/admin/pipelines      A1/A2/A3/A5 — pipelines + phases
+(dashboard)/admin/scripts        D1 — scripts CRUD
+(dashboard)/admin/usuarios       D3 (partial) — users + roles
+(dashboard)/admin/notificaciones A11–A15 — notification rules
+(dashboard)/admin/kpis           A7/A8 — KPI thresholds
+```
+
+API routes mirror the same tree under `src/app/api/`. Admin endpoints live under
+`src/app/api/admin/*` and all start with `requireAdmin()`.
+
+## Conventions
+
+- **English only** in code, comments, commits, docs, memory. UI strings in Spanish are
+  the only exception.
+- **300-line file cap.** Split before adding code if a file is approaching 250.
+- **Forward Progress Only.** Never break existing functionality. When in doubt: add, don't
+  replace.
+- **Ask before architectural decisions** — folder structure, library picks, schema
+  changes, state strategy. Never assume a "sensible default".
+- **Always WebSearch** before using a third-party API to confirm current signatures.
+- For Supabase inserts/updates that touch JSONB columns, cast to `Json` from
+  `@/types/database` — `Record<string, unknown>` is too broad for the generated type.
+
+## Testing
+
+End-to-end manual testing is documented in [`docs/user-guide.md`](./docs/user-guide.md).
+Run `npx tsc --noEmit` after every change. There is no automated test suite yet.
