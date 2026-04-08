@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { requireApiAuth, jsonError } from '@/lib/api-utils';
+import { requireApiAuth } from '@/lib/api-utils';
 import type { ApiUser } from '@/lib/api-utils';
 
 export async function GET() {

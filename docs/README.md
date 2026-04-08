@@ -27,8 +27,11 @@ hierarchy, and acceptance criteria.
 | 6 | [`phase-6-polish-deploy.md`](./phase-6-polish-deploy.md) | Cmd+K palette, responsive polish, Docker deploy | IMPLEMENTED |
 | 7 | [`phase-7-admin-suite.md`](./phase-7-admin-suite.md) | Admin panel: phases, scripts, users, KPI config, notification config | IMPLEMENTED |
 | 8 | [`phase-8-ui-polish.md`](./phase-8-ui-polish.md) | Loading skeletons, error boundary, not-found page | IMPLEMENTED |
+| 9 | [`phase-9-empresa-task-calendar.md`](./phase-9-empresa-task-calendar.md) | Empresa task calendar widget | IMPLEMENTED |
+| 10 | [`phase-10-multi-instance.md`](./phase-10-multi-instance.md) | Multi-instance per-tenant install (branding, custom fields, feature flags) | DRAFT |
 | — | [`i18n.md`](./i18n.md) | Spanish-only UI rule + glossary + per-file translation status | Living |
 | — | [`user-guide.md`](./user-guide.md) | End-user feature guide and step-by-step test scenarios | Living |
+| — | [`seed.md`](./seed.md) | Seed system: date-relative anchoring, entity coverage, helpers, test-user starting state | Living |
 
 ## 2. Source-of-truth spec from the customer
 

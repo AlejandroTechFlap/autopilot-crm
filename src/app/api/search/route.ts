@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireApiAuth, jsonError } from '@/lib/api-utils';
 import type { ApiUser } from '@/lib/api-utils';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import type { NextRequest } from 'next/server';
 
 const MAX_PER_CATEGORY = 5;
@@ -9,6 +10,9 @@ export async function GET(request: NextRequest) {
   const auth = await requireApiAuth();
   if (auth instanceof Response) return auth;
   const user = auth as ApiUser;
+
+  const limit = rateLimit(`search:${user.id}`, 60, 60_000);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
   if (!q || q.length < 2) {
@@ -31,14 +35,11 @@ export async function GET(request: NextRequest) {
       return query;
     })(),
 
-    (() => {
-      let query = supabase
-        .from('contactos')
-        .select('id, nombre_completo, cargo, empresa_id, empresa:empresas!contactos_empresa_id_fkey(nombre)')
-        .ilike('nombre_completo', pattern)
-        .limit(MAX_PER_CATEGORY);
-      return query;
-    })(),
+    supabase
+      .from('contactos')
+      .select('id, nombre_completo, cargo, empresa_id, empresa:empresas!contactos_empresa_id_fkey(nombre)')
+      .ilike('nombre_completo', pattern)
+      .limit(MAX_PER_CATEGORY),
 
     (() => {
       let query = supabase

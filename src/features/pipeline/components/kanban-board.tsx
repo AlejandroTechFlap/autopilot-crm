@@ -25,7 +25,6 @@ interface KanbanBoardProps {
   data: PipelineData | null;
   loading: boolean;
   error: string | null;
-  refresh: () => void;
   applyOptimisticMove: (dealId: string, targetFaseId: string) => () => void;
   /** Hide the "Nuevo lead" button for vendedores. */
   canCreateLead: boolean;
@@ -36,7 +35,6 @@ export function KanbanBoard({
   data,
   loading,
   error,
-  refresh,
   applyOptimisticMove,
   canCreateLead,
   onCreateLead,

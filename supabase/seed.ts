@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import { seedCleanup } from './seed/cleanup';
 import { seedUsers } from './seed/users';
 import { seedPipeline } from './seed/pipeline';
 import { seedCompanies } from './seed/companies';
@@ -25,6 +26,7 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 async function main() {
   console.log('Seeding Autopilot CRM...\n');
 
+  await seedCleanup(supabase);
   const users = await seedUsers(supabase);
   await seedPipeline(supabase, users);
   await seedCompanies(supabase, users);

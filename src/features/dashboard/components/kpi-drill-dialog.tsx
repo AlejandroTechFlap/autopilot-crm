@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Dialog,
@@ -39,19 +39,23 @@ export function KpiDrillDialog({
 
   useEffect(() => {
     if (!open || !tipo) return;
-    setData(null);
-    setLoading(true);
-    setError(null);
+    startTransition(() => {
+      setData(null);
+      setLoading(true);
+      setError(null);
+    });
     fetch(`/api/dashboard/drill/${tipo}?periodo=${periodo}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((json: DrillData) => setData(json))
+      .then((json: DrillData) => startTransition(() => setData(json)))
       .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : 'No se pudo cargar el detalle');
+        startTransition(() =>
+          setError(e instanceof Error ? e.message : 'No se pudo cargar el detalle')
+        );
       })
-      .finally(() => setLoading(false));
+      .finally(() => startTransition(() => setLoading(false)));
   }, [open, tipo, periodo]);
 
   return (

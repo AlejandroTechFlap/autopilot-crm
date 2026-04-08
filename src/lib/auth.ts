@@ -1,16 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import type { Database } from '@/types/database';
+import type { CrmUser, RolUsuario } from './auth-client';
 
-type RolUsuario = Database['public']['Enums']['rol_usuario'];
-
-export interface CrmUser {
-  id: string;
-  email: string;
-  nombre: string;
-  rol: RolUsuario;
-  avatar_url: string | null;
-}
+// Re-export the client-safe symbols so existing server-side imports that
+// reach for `@/lib/auth` keep working. Client components MUST import from
+// `@/lib/auth-client` directly to avoid pulling `next/headers` into the
+// browser bundle (see `./auth-client.ts` for context).
+export { hasRole, type CrmUser, type RolUsuario } from './auth-client';
 
 export async function getCurrentUser(): Promise<CrmUser | null> {
   const supabase = await createClient();
@@ -39,6 +35,3 @@ export async function requireRole(...roles: RolUsuario[]): Promise<CrmUser> {
   return user;
 }
 
-export function hasRole(user: CrmUser, ...roles: RolUsuario[]): boolean {
-  return roles.includes(user.rol);
-}

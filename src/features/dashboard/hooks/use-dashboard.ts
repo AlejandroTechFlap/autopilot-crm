@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { startTransition, useCallback, useEffect, useState } from 'react';
 import type { DashboardData, ChartPoint, Periodo, ChartType } from '../types';
 
 export function useDashboardKpis(periodo: Periodo) {
@@ -25,18 +25,25 @@ export function useDashboardKpis(periodo: Periodo) {
   return { data, loading, refresh: load };
 }
 
-export function useChartData(tipo: ChartType, periodo: Periodo) {
+export function useChartData(tipo: ChartType, periodo: Periodo, enabled = true) {
   const [series, setSeries] = useState<ChartPoint[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   useEffect(() => {
-    setLoading(true);
+    if (!enabled) {
+      startTransition(() => {
+        setSeries([]);
+        setLoading(false);
+      });
+      return;
+    }
+    startTransition(() => setLoading(true));
     fetch(`/api/dashboard/historico?tipo=${tipo}&periodo=${periodo}`)
       .then((r) => r.json())
-      .then((d) => setSeries(d.series ?? []))
+      .then((d) => startTransition(() => setSeries(d.series ?? [])))
       .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [tipo, periodo]);
+      .finally(() => startTransition(() => setLoading(false)));
+  }, [tipo, periodo, enabled]);
 
   return { series, loading };
 }

@@ -3,7 +3,7 @@
 > Audience: end users (sales reps, sales managers, admins) testing the application
 > through the browser. **No APIs, no curl, no DevTools.** Everything below is clickable.
 >
-> Last updated: 2026-04-07.
+> Last updated: 2026-04-08.
 
 ## 1. Getting started
 
@@ -24,6 +24,23 @@
 | Vendedor | `laura@autopilotcrm.com` | `Laura123!` | `/pipeline` |
 
 Source of truth: `supabase/seed/users.ts`.
+
+### 1.4 Expected starting state (seed day)
+
+The seed is **date-relative** — every tarea, deal, and activity is anchored
+to today, so the demo never goes stale. See [`seed.md`](./seed.md) for the
+full entity coverage table.
+
+| User | Cockpit / tareas | Pipeline | Bell | Dashboard |
+|---|---|---|---|---|
+| Ignacio | **6 pendientes / 2 vencidas** + today + tomorrow buckets | 5+ deals active, VetPartners red | 4 items (2 unread, mix of `follow_up_overdue` / `deal_stalled` / `deal_won`) | — |
+| Laura | **6 pendientes / 1 vencida** + 1 "sin fecha" | 5+ deals active, Clinica Sol overdue | 4 items (3 unread, incl. mention + task reminder) | — |
+| Rebeca | 1 future task | all deals visible | 4 items (mix) | 5 KPI tiles populated + 30-day historical chart + comisiones trend across 3 months |
+| Admin | — | — | — | Every `/admin/*` screen populated, tenant brand + feature flags applied, 7 custom-field definitions visible |
+
+The **Tareas pendientes** and **Tareas vencidas** KPI cards on the cockpit
+have distinct subtitles ("Incluye hoy y futuras" / "Fecha límite pasada")
+so the two numbers can never be confused.
 
 ### 1.3 Top navigation
 

@@ -2,11 +2,14 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { jsonError } from '@/lib/api-utils';
 import { requireAdmin } from '@/features/admin/lib/admin-guard';
+import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 
 /** GET — list all KPI configs. */
 export async function GET() {
   const auth = await requireAdmin();
   if (auth instanceof Response) return auth;
+  const blocked = await assertFeatureFlag('feat_admin_kpis');
+  if (blocked) return blocked;
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -36,6 +39,8 @@ const BulkPatchSchema = z.object({
 export async function PATCH(request: Request) {
   const auth = await requireAdmin();
   if (auth instanceof Response) return auth;
+  const blocked = await assertFeatureFlag('feat_admin_kpis');
+  if (blocked) return blocked;
 
   const json = await request.json().catch(() => null);
   const parsed = BulkPatchSchema.safeParse(json);

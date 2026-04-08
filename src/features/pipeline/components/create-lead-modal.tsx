@@ -10,16 +10,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { FUENTE_LABELS, CATEGORIA_LABELS } from '@/lib/constants';
+import { LeadFormFields } from './lead-form-fields';
+import { validateCamposPersonalizados } from '@/features/tenant/lib/custom-fields';
+import type {
+  CampoPersonalizado,
+  CustomFieldsMap,
+} from '@/features/tenant/types';
 
 interface CreateLeadModalProps {
   pipelineId: string;
@@ -38,6 +34,14 @@ interface CreateLeadModalProps {
    * `docs/phase-2-pipeline-company.md` → "Lead creation — role gating".
    */
   vendedores: { id: string; nombre: string }[];
+  /**
+   * Phase 10 — custom field definitions per entity, loaded server-side and
+   * passed in by the parent so the modal stays render-only. Pass `[]` if
+   * none defined; the form simply omits the section.
+   */
+  empresaCampos: CampoPersonalizado[];
+  contactoCampos: CampoPersonalizado[];
+  dealCampos: CampoPersonalizado[];
 }
 
 interface FaseOption {
@@ -52,15 +56,35 @@ export function CreateLeadModal({
   onOpenChange,
   onCreated,
   vendedores,
+  empresaCampos,
+  contactoCampos,
+  dealCampos,
 }: CreateLeadModalProps) {
   const router = useRouter();
   const [fases, setFases] = useState<FaseOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [vendedorAsignado, setVendedorAsignado] = useState<string>('');
+  // Phase 10 — controlled custom-field state, one map per entity. Reset on
+  // close so the next open starts fresh and never leaks data across leads.
+  const [empresaCamposValues, setEmpresaCamposValues] = useState<CustomFieldsMap>({});
+  const [contactoCamposValues, setContactoCamposValues] = useState<CustomFieldsMap>({});
+  const [dealCamposValues, setDealCamposValues] = useState<CustomFieldsMap>({});
+  const [empresaCamposErrors, setEmpresaCamposErrors] = useState<Record<string, string>>({});
+  const [contactoCamposErrors, setContactoCamposErrors] = useState<Record<string, string>>({});
+  const [dealCamposErrors, setDealCamposErrors] = useState<Record<string, string>>({});
 
-  // Reset the assignee when the modal closes so the next open starts fresh.
+  // Reset the assignee + custom field state when the modal closes so the
+  // next open starts fresh.
   useEffect(() => {
-    if (!open) setVendedorAsignado('');
+    if (!open) {
+      setVendedorAsignado('');
+      setEmpresaCamposValues({});
+      setContactoCamposValues({});
+      setDealCamposValues({});
+      setEmpresaCamposErrors({});
+      setContactoCamposErrors({});
+      setDealCamposErrors({});
+    }
   }, [open]);
 
   // Fetch phases for the pipeline
@@ -103,6 +127,19 @@ export function CreateLeadModal({
         return;
       }
 
+      // Validate custom fields client-side. Server-side validation runs
+      // again in /api/deals — this client pass is for instant feedback.
+      const empresaResult = validateCamposPersonalizados(empresaCampos, empresaCamposValues);
+      const contactoResult = validateCamposPersonalizados(contactoCampos, contactoCamposValues);
+      const dealResult = validateCamposPersonalizados(dealCampos, dealCamposValues);
+      setEmpresaCamposErrors(empresaResult.ok ? {} : empresaResult.errors);
+      setContactoCamposErrors(contactoResult.ok ? {} : contactoResult.errors);
+      setDealCamposErrors(dealResult.ok ? {} : dealResult.errors);
+      if (!empresaResult.ok || !contactoResult.ok || !dealResult.ok) {
+        toast.error('Revisa los campos personalizados marcados en rojo');
+        return;
+      }
+
       setSubmitting(true);
 
       const form = new FormData(e.currentTarget);
@@ -113,18 +150,21 @@ export function CreateLeadModal({
           fuente_lead: form.get('fuente_lead') as string,
           provincia: (form.get('provincia') as string) || undefined,
           categoria: (form.get('categoria') as string) || undefined,
+          campos_personalizados: empresaResult.sanitized,
         },
         contacto: {
           nombre_completo: form.get('contacto_nombre') as string,
           cargo: (form.get('cargo') as string) || undefined,
           telefono: (form.get('telefono') as string) || undefined,
           email: (form.get('email') as string) || undefined,
+          campos_personalizados: contactoResult.sanitized,
         },
         deal: {
           pipeline_id: pipelineId,
           fase_actual: (form.get('fase_actual') as string) || firstFaseId,
           valor: Number(form.get('valor') || 0),
           vendedor_asignado: vendedorAsignado,
+          campos_personalizados: dealResult.sanitized,
         },
       };
 
@@ -155,7 +195,20 @@ export function CreateLeadModal({
         setSubmitting(false);
       }
     },
-    [pipelineId, firstFaseId, onOpenChange, onCreated, router, vendedorAsignado]
+    [
+      pipelineId,
+      firstFaseId,
+      onOpenChange,
+      onCreated,
+      router,
+      vendedorAsignado,
+      empresaCampos,
+      empresaCamposValues,
+      contactoCampos,
+      contactoCamposValues,
+      dealCampos,
+      dealCamposValues,
+    ]
   );
 
   return (
@@ -166,116 +219,32 @@ export function CreateLeadModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Company section */}
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-medium text-foreground">Empresa</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label htmlFor="empresa_nombre">Nombre *</Label>
-                <Input id="empresa_nombre" name="empresa_nombre" required />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="fuente_lead">Fuente *</Label>
-                <Select name="fuente_lead" defaultValue="otro">
-                  <SelectTrigger id="fuente_lead">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(FUENTE_LABELS).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="provincia">Provincia</Label>
-                <Input id="provincia" name="provincia" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="categoria">Categoría</Label>
-                <Select name="categoria">
-                  <SelectTrigger id="categoria">
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(CATEGORIA_LABELS).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Contact section */}
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-medium text-foreground">Contacto</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label htmlFor="contacto_nombre">Nombre completo *</Label>
-                <Input id="contacto_nombre" name="contacto_nombre" required />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="cargo">Cargo</Label>
-                <Input id="cargo" name="cargo" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="telefono">Teléfono</Label>
-                <Input id="telefono" name="telefono" type="tel" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" />
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Deal section */}
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-medium text-foreground">Oportunidad</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label htmlFor="fase_actual">Fase</Label>
-                <Select name="fase_actual" defaultValue={firstFaseId}>
-                  <SelectTrigger id="fase_actual">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fases.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>{f.nombre}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="valor">Valor (EUR)</Label>
-                <Input id="valor" name="valor" type="number" min="0" defaultValue="0" />
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Assignment section — required pick, no implicit self-assignment. */}
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-medium text-foreground">Asignación</legend>
-            <div className="space-y-1">
-              <Label htmlFor="vendedor_asignado">Vendedor asignado *</Label>
-              <Select
-                value={vendedorAsignado}
-                onValueChange={(v) => setVendedorAsignado(v ?? '')}
-              >
-                <SelectTrigger id="vendedor_asignado">
-                  <SelectValue placeholder="Selecciona un vendedor..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {vendedores.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </fieldset>
+          <LeadFormFields
+            fases={fases}
+            firstFaseId={firstFaseId}
+            vendedores={vendedores}
+            vendedorAsignado={vendedorAsignado}
+            onVendedorChange={setVendedorAsignado}
+            empresaCampos={{
+              definitions: empresaCampos,
+              values: empresaCamposValues,
+              onChange: setEmpresaCamposValues,
+              errors: empresaCamposErrors,
+            }}
+            contactoCampos={{
+              definitions: contactoCampos,
+              values: contactoCamposValues,
+              onChange: setContactoCamposValues,
+              errors: contactoCamposErrors,
+            }}
+            dealCampos={{
+              definitions: dealCampos,
+              values: dealCamposValues,
+              onChange: setDealCamposValues,
+              errors: dealCamposErrors,
+            }}
+            disabled={submitting}
+          />
 
           <div className="flex justify-end gap-2 pt-2">
             <Button

@@ -1,240 +1,89 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UserMap } from './users';
-import { FASE_IDS, EMPRESA_IDS, DEAL_IDS } from './ids';
+import { DEAL_IDS } from './ids';
+import { dateOffset, monthOffset } from './seed-date';
+import { seedScripts } from './scripts';
+import { seedTasks } from './tasks';
+import { seedNotifications } from './notifications';
+import { seedTenantConfig, seedCustomFieldDefinitions } from './custom-fields';
 
+/**
+ * Config seed orchestrator. Groups the small, config-shaped tables
+ * (comisiones, kpi_config, kpi_snapshots, notificacion_config) and
+ * delegates the larger ones to their own modules (scripts, tasks,
+ * notifications, custom-fields) to stay under the 300-line file cap.
+ */
 export async function seedConfig(supabase: SupabaseClient, users: UserMap) {
   await seedScripts(supabase, users);
   await seedTasks(supabase, users);
+  await seedNotifications(supabase, users);
+  await seedTenantConfig(supabase);
+  await seedCustomFieldDefinitions(supabase);
   await seedCommissions(supabase, users);
   await seedNotificationConfig(supabase, users);
   await seedKpiConfig(supabase);
   await seedKpiSnapshots(supabase);
 }
 
-async function seedScripts(supabase: SupabaseClient, users: UserMap) {
-  console.log('  Creating scripts...');
-
-  const scripts = [
-    {
-      titulo: 'Llamada en frio - Apertura completa',
-      fase_asociada: FASE_IDS.NUEVO_LEAD,
-      contenido: [
-        '1) APERTURA (15 segundos):',
-        'Hola [NOMBRE], le llamo de [EMPRESA]. Se que no me esperaba, asi que ire al grano. Mi nombre es [VENDEDOR] y trabajamos con tiendas y distribuidores como el suyo en [PROVINCIA].',
-        '',
-        '2) RAZON DE LA LLAMADA:',
-        'Le llamo porque hemos ayudado a negocios similares al suyo a aumentar el ticket medio un 18-25% sustituyendo dos o tres referencias de su catalogo actual por nuestra gama premium, sin tocar el resto del surtido.',
-        '',
-        '3) PERMISO PARA CONTINUAR:',
-        'Tiene dos minutos para que le explique como funciona y vemos si tiene sentido para usted? Si no encaja, se lo digo yo mismo y no le hago perder mas tiempo.',
-        '',
-        '4) PREGUNTAS DE CALIFICACION (si dice que si):',
-        '- Cuantas referencias maneja actualmente en su categoria principal?',
-        '- Quien le sirve hoy esos productos?',
-        '- Cuando fue la ultima vez que renovo el catalogo?',
-        '',
-        '5) OBJECION "ESTOY OCUPADO":',
-        'Le entiendo perfectamente, no le robo mas de 30 segundos. Le mando un email con tres ejemplos concretos de tiendas como la suya y, si le interesa lo que ve, me llama usted. Le parece?',
-        '',
-        '6) CIERRE DE LA LLAMADA:',
-        'Genial. Le bloqueo 20 minutos en mi agenda el [FECHA] a las [HORA]? Le envio invitacion de calendario ahora mismo y un par de fichas de producto para que vaya viendo. Confirmamos por email?',
-      ].join('\n'),
-      tags: ['apertura', 'prospeccion', 'frio'],
-      created_by: users.rebeca,
-    },
-    {
-      titulo: 'Seguimiento de propuesta',
-      fase_asociada: FASE_IDS.PROPUESTA,
-      contenido: [
-        '1) APERTURA:',
-        'Buenos dias [NOMBRE], soy [VENDEDOR] de [EMPRESA]. Le llamo para hacer seguimiento de la propuesta que le envie el [FECHA] sobre [ASUNTO]. Como le va la semana?',
-        '',
-        '2) PREGUNTA ABIERTA:',
-        'Ha tenido oportunidad de revisarla con calma? Cual es su primera impresion?',
-        '',
-        '3) SI YA LA HA VISTO:',
-        '- Que parte le ha encajado mejor?',
-        '- Hay algun apartado que le haya generado dudas o que quiera que repasemos juntos?',
-        '- Esta lo que esperaba en cuanto a alcance y plazos?',
-        '',
-        '4) SI AUN NO LA HA VISTO:',
-        'Sin problema, lo entiendo. Le propongo una cosa: bloqueamos 20 minutos manana o pasado y la repasamos juntos por videollamada. Asi resolvemos cualquier duda en directo y usted no tiene que invertir tiempo leyendola en frio. Que prefiere, manana a las 11 o pasado a las 16?',
-        '',
-        '5) PREGUNTA CLAVE PARA AVANZAR:',
-        'Si os encaja todo lo que hemos planteado, hay algun tramite interno (comite, aprobacion de direccion, validacion tecnica) que tengamos que prever para no perder tiempo despues?',
-        '',
-        '6) PROXIMO PASO CONCRETO:',
-        'Perfecto. Lo dejamos asi: yo le envio hoy mismo [DOCUMENTO/AJUSTE] y nos volvemos a hablar el [FECHA]. Le parece bien que lo bloquee en agenda ahora?',
-      ].join('\n'),
-      tags: ['seguimiento', 'propuesta', 'cierre'],
-      created_by: users.rebeca,
-    },
-    {
-      titulo: 'Negociacion de precios y objeciones',
-      fase_asociada: FASE_IDS.NEGOCIACION,
-      contenido: [
-        '1) RECONOCER LA OBJECION SIN CEDER:',
-        'Entiendo perfectamente, [NOMBRE]. El precio es importante y es normal que lo cuestione. Antes de hablar de numeros, me gustaria asegurarme de que estamos comparando lo mismo.',
-        '',
-        '2) REENMARCAR EL VALOR:',
-        'Recordemos que el precio incluye [VALOR_DIFERENCIAL_1], [VALOR_DIFERENCIAL_2] y [VALOR_DIFERENCIAL_3]. La mayoria de nuestros clientes recuperan la inversion en los primeros [N] meses solo con [METRICA].',
-        '',
-        '3) PREGUNTA DIAGNOSTICA:',
-        '- Con que precio o competidor lo esta comparando?',
-        '- Que le falta a esta propuesta para que sea un "si" claro?',
-        '- Es solo el precio o hay algun otro punto que tambien le frene?',
-        '',
-        '4) ESCALERA DE CONCESIONES (no usar todas a la vez):',
-        '- Opcion A: Mantener el precio y anadir [SERVICIO_EXTRA] sin coste.',
-        '- Opcion B: Plan de pago en dos veces (50% al firmar, 50% a 30 dias).',
-        '- Opcion C: 5% de descuento si cerramos antes del [FECHA_LIMITE] y firmamos por 12 meses.',
-        '- Opcion D: 7% si ademas confirmamos pedido inicial minimo de [IMPORTE].',
-        '',
-        '5) PEDIR ALGO A CAMBIO (siempre):',
-        'Puedo aplicar el descuento, pero a cambio necesito que cerremos esta misma semana y que firmemos por 12 meses. Le encaja?',
-        '',
-        '6) CIERRE CONDICIONAL:',
-        'Si le aplico [CONCESION], tenemos acuerdo hoy? Le envio el contrato firmado por mi parte en cuanto colguemos.',
-      ].join('\n'),
-      tags: ['negociacion', 'cierre', 'descuento', 'objeciones'],
-      created_by: users.rebeca,
-    },
-    {
-      titulo: 'Bienvenida y onboarding nuevo cliente',
-      fase_asociada: FASE_IDS.POSTVENTA,
-      contenido: [
-        '1) MENSAJE DE BIENVENIDA (mismo dia del cierre):',
-        'Bienvenido a bordo, [NOMBRE]! Acaba de tomar una gran decision y quiero asegurarme de que el arranque sea impecable. Soy [VENDEDOR] y voy a ser su contacto principal durante los proximos 90 dias.',
-        '',
-        '2) PROXIMOS PASOS CONCRETOS:',
-        '- Hoy: confirmacion de pedido y factura proforma por email.',
-        '- En 24 horas: alta en nuestro portal de cliente con sus credenciales.',
-        '- En 48 horas: llamada de bienvenida con [GESTOR_CUENTA] para presentaciones.',
-        '- En 7 dias: primera entrega segun el calendario acordado.',
-        '- En 14 dias: revision de stock y ajustes si es necesario.',
-        '',
-        '3) RECORDAR EL POR QUE:',
-        'Recuerde que el objetivo que nos marcamos era [OBJETIVO_CLIENTE]. Vamos a medirlo cada mes y lo revisaremos juntos en nuestra reunion del [FECHA].',
-        '',
-        '4) CHECK-IN A LOS 30 DIAS (agendar ya):',
-        'Le bloqueo 30 minutos en agenda el [FECHA] para revisar como ha ido el primer mes, ajustar lo que haga falta y planificar el siguiente. Le mando invitacion ahora.',
-        '',
-        '5) INVITACION A REFERENCIA (a partir del dia 60):',
-        'Si todo va como esperamos, en un par de meses me gustaria pedirle una referencia. No le robaria mas de 5 minutos: solo una llamada con un cliente potencial parecido a usted. Le parece bien que se lo plantee mas adelante?',
-        '',
-        '6) CIERRE EMOCIONAL:',
-        'Mi telefono directo es [TELEFONO] y mi email [EMAIL]. Para cualquier cosa, me llama directamente a mi. Bienvenido al equipo, [NOMBRE]!',
-      ].join('\n'),
-      tags: ['onboarding', 'cliente', 'postventa', 'fidelizacion'],
-      created_by: users.rebeca,
-    },
-  ];
-
-  const { error } = await supabase.from('scripts').upsert(scripts, { onConflict: 'id' });
-  if (error) throw new Error(`Scripts: ${error.message}`);
-}
-
-async function seedTasks(supabase: SupabaseClient, users: UserMap) {
-  console.log('  Creating tasks...');
-
-  const tareas = [
-    // Ignacio's tasks
-    {
-      empresa_id: EMPRESA_IDS.PETSHOP_MADRID,
-      deal_id: DEAL_IDS.PETSHOP,
-      vendedor_asignado: users.ignacio,
-      titulo: 'Llamar a PetShop Madrid',
-      descripcion: 'Presentar catalogo completo de productos premium',
-      prioridad: 'alta',
-      fecha_vencimiento: '2026-04-07',
-      completada: false,
-      origen: 'manual',
-      tipo_tarea: 'llamada',
-    },
-    {
-      empresa_id: EMPRESA_IDS.VETPARTNERS,
-      deal_id: DEAL_IDS.VETPARTNERS,
-      vendedor_asignado: users.ignacio,
-      titulo: 'Enviar propuesta revisada VetPartners',
-      descripcion: 'Dr. Torres pidio ajustes en precios por volumen',
-      prioridad: 'alta',
-      fecha_vencimiento: '2026-04-03',
-      completada: false,
-      origen: 'manual',
-      tipo_tarea: 'email',
-    },
-    {
-      empresa_id: EMPRESA_IDS.ANIMALIA,
-      deal_id: DEAL_IDS.ANIMALIA,
-      vendedor_asignado: users.ignacio,
-      titulo: 'Seguimiento Animalia Store',
-      descripcion: 'Agendar reunion online para presentacion de productos',
-      prioridad: 'media',
-      fecha_vencimiento: '2026-04-08',
-      completada: false,
-      origen: 'sistema',
-      tipo_tarea: 'seguimiento',
-    },
-    // Laura's tasks
-    {
-      empresa_id: EMPRESA_IDS.AGROVET,
-      deal_id: DEAL_IDS.AGROVET,
-      vendedor_asignado: users.laura,
-      titulo: 'Contactar AgroVet Levante',
-      descripcion: 'Enviar informacion detallada de productos agro',
-      prioridad: 'alta',
-      fecha_vencimiento: '2026-04-06',
-      completada: false,
-      origen: 'manual',
-      tipo_tarea: 'llamada',
-    },
-    {
-      empresa_id: EMPRESA_IDS.CLINICA_SOL,
-      deal_id: DEAL_IDS.CLINICA,
-      vendedor_asignado: users.laura,
-      titulo: 'Preparar demo Clinica Sol',
-      descripcion: 'Dra. Moreno quiere ver demo del sistema de pedidos online',
-      prioridad: 'media',
-      fecha_vencimiento: '2026-04-09',
-      completada: false,
-      origen: 'manual',
-      tipo_tarea: 'reunion',
-    },
-    {
-      vendedor_asignado: users.laura,
-      titulo: 'Revision de leads nuevos',
-      descripcion: 'Revisar y calificar leads entrantes de la semana',
-      prioridad: 'baja',
-      fecha_vencimiento: '2026-04-10',
-      completada: false,
-      origen: 'sistema',
-      tipo_tarea: 'admin',
-    },
-  ];
-
-  const { error } = await supabase.from('tareas').upsert(tareas, { onConflict: 'id' });
-  if (error) throw new Error(`Tasks: ${error.message}`);
-}
-
+/**
+ * Comisiones — 6 rows spread across the last 3 months so the direccion
+ * comisiones view has a real trend line. Mixes vendedores so the
+ * per-seller breakdown is non-trivial.
+ */
 async function seedCommissions(supabase: SupabaseClient, users: UserMap) {
   console.log('  Creating commissions...');
 
   const comisiones = [
+    // Current month
     {
       deal_id: DEAL_IDS.MASCOTAS,
       vendedor_id: users.ignacio,
       valor_deal: 60000,
-      porcentaje: 5.00,
+      porcentaje: 5.0,
       importe_comision: 3000,
-      periodo: '2026-Q1',
+      periodo: monthOffset(0),
     },
     {
       deal_id: DEAL_IDS.PETCORNER,
       vendedor_id: users.ignacio,
       valor_deal: 90000,
-      porcentaje: 5.00,
+      porcentaje: 5.0,
       importe_comision: 4500,
-      periodo: '2026-Q1',
+      periodo: monthOffset(0),
+    },
+    // Previous month
+    {
+      deal_id: DEAL_IDS.VETLAB_WON,
+      vendedor_id: users.laura,
+      valor_deal: 42000,
+      porcentaje: 5.0,
+      importe_comision: 2100,
+      periodo: monthOffset(-1),
+    },
+    {
+      deal_id: DEAL_IDS.ECOPETS_PAST,
+      vendedor_id: users.ignacio,
+      valor_deal: 52000,
+      porcentaje: 4.5,
+      importe_comision: 2340,
+      periodo: monthOffset(-1),
+    },
+    // Two months ago — historical synthetic deals
+    {
+      deal_id: '00000000-0000-0000-0000-0000000000a1',
+      vendedor_id: users.rebeca,
+      valor_deal: 40000,
+      porcentaje: 5.0,
+      importe_comision: 2000,
+      periodo: monthOffset(-2),
+    },
+    {
+      deal_id: '00000000-0000-0000-0000-0000000000a2',
+      vendedor_id: users.laura,
+      valor_deal: 55000,
+      porcentaje: 5.0,
+      importe_comision: 2750,
+      periodo: monthOffset(-2),
     },
   ];
 
@@ -270,23 +119,37 @@ async function seedKpiConfig(supabase: SupabaseClient) {
   if (error) throw new Error(`KPI config: ${error.message}`);
 }
 
+/**
+ * KPI snapshots — one row per day for the last 30 days, per KPI type,
+ * so the dirección historical chart renders a real line (not two points).
+ * Values follow a deterministic sine-like drift so the trend is visible
+ * but not random.
+ */
 async function seedKpiSnapshots(supabase: SupabaseClient) {
   console.log('  Creating KPI snapshots...');
 
-  const snapshots = [
-    { kpi_tipo: 'deals_ganados', valor: 2, fecha: '2026-03-01' },
-    { kpi_tipo: 'deals_ganados', valor: 3, fecha: '2026-03-15' },
-    { kpi_tipo: 'deals_ganados', valor: 2, fecha: '2026-04-01' },
-    { kpi_tipo: 'ingresos_cerrados', valor: 90000, fecha: '2026-03-01' },
-    { kpi_tipo: 'ingresos_cerrados', valor: 150000, fecha: '2026-03-15' },
-    { kpi_tipo: 'ingresos_cerrados', valor: 60000, fecha: '2026-04-01' },
-    { kpi_tipo: 'llamadas_realizadas', valor: 35, fecha: '2026-03-01' },
-    { kpi_tipo: 'llamadas_realizadas', valor: 42, fecha: '2026-03-15' },
-    { kpi_tipo: 'llamadas_realizadas', valor: 28, fecha: '2026-04-01' },
-    { kpi_tipo: 'tasa_conversion', valor: 25, fecha: '2026-03-01' },
-    { kpi_tipo: 'tasa_conversion', valor: 33, fecha: '2026-03-15' },
-    { kpi_tipo: 'tasa_conversion', valor: 22, fecha: '2026-04-01' },
+  type Spec = { tipo: string; base: number; amplitude: number };
+  const specs: Spec[] = [
+    { tipo: 'deals_ganados', base: 3, amplitude: 2 },
+    { tipo: 'ingresos_cerrados', base: 90000, amplitude: 60000 },
+    { tipo: 'llamadas_realizadas', base: 32, amplitude: 14 },
+    { tipo: 'tasa_conversion', base: 26, amplitude: 8 },
   ];
+
+  const snapshots: Array<{ kpi_tipo: string; valor: number; fecha: string }> = [];
+  for (const spec of specs) {
+    for (let d = 0; d < 30; d++) {
+      // Deterministic drift: sine over 30 days + small linear trend upward.
+      const phase = (d / 30) * Math.PI * 2;
+      const drift = Math.round(spec.amplitude * Math.sin(phase));
+      const trend = Math.round((d / 30) * spec.amplitude * 0.25);
+      snapshots.push({
+        kpi_tipo: spec.tipo,
+        valor: Math.max(0, spec.base + drift + trend),
+        fecha: dateOffset(-(29 - d)),
+      });
+    }
+  }
 
   const { error } = await supabase.from('kpi_snapshots').upsert(snapshots, { onConflict: 'id' });
   if (error) throw new Error(`KPI snapshots: ${error.message}`);

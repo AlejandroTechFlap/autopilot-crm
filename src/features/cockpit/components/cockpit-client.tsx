@@ -5,11 +5,13 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TaskList } from './task-list';
+import { TaskCalendarPanel } from './task-calendar-panel';
 import { PersonalKpis } from './personal-kpis';
 import { TeamKpisCompact } from './team-kpis-compact';
 import { ScriptLibrary } from './script-library';
 import { CreateTaskModal } from './create-task-modal';
 import { MorningSummary } from '@/features/ai-chat/components/morning-summary';
+import { useFeatureFlag } from '@/features/tenant/lib/tenant-context';
 import { useTasks } from '../hooks/use-tasks';
 import { usePersonalKpis } from '../hooks/use-personal-kpis';
 
@@ -27,12 +29,13 @@ export function CockpitClient({ userId, userRole }: CockpitClientProps) {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const { tasks, loading, completeTask, refresh } = useTasks();
   const isVendedor = userRole === 'vendedor';
+  const morningSummaryEnabled = useFeatureFlag('feat_morning_summary');
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Main area — summary + task list */}
       <div className="space-y-4 lg:col-span-2">
-        <MorningSummary />
+        {morningSummaryEnabled && <MorningSummary />}
 
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Mis tareas</h2>
@@ -63,6 +66,21 @@ export function CockpitClient({ userId, userRole }: CockpitClientProps) {
           </CardHeader>
           <CardContent>
             {isVendedor ? <PersonalKpisCard /> : <TeamKpisCompact />}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Calendario de tareas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TaskCalendarPanel
+              tasks={tasks}
+              loading={loading}
+              onComplete={completeTask}
+              onCreated={refresh}
+              userId={userId}
+            />
           </CardContent>
         </Card>
 

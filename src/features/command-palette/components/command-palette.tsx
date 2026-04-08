@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { startTransition, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Building2,
@@ -8,7 +8,6 @@ import {
   ListTodo,
   Phone,
   Plus,
-  Search,
   Sparkles,
   User,
   Handshake,
@@ -24,6 +23,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useFeatureFlag } from '@/features/tenant/lib/tenant-context';
 
 interface SearchResults {
   empresas: Array<{ id: string; nombre: string; lifecycle_stage: string; provincia: string | null }>;
@@ -49,6 +49,7 @@ export function CommandPalette({
   const [results, setResults] = useState<SearchResults | null>(null);
   const debouncedQuery = useDebounce(query, 250);
   const router = useRouter();
+  const aiChatEnabled = useFeatureFlag('feat_ai_chat');
 
   // Register Cmd+K / Ctrl+K
   useEffect(() => {
@@ -65,13 +66,13 @@ export function CommandPalette({
   // Fetch search results
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) {
-      setResults(null);
+      startTransition(() => setResults(null));
       return;
     }
     fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
       .then((r) => r.json())
-      .then((d) => setResults(d))
-      .catch(() => setResults(null));
+      .then((d) => startTransition(() => setResults(d)))
+      .catch(() => startTransition(() => setResults(null)));
   }, [debouncedQuery]);
 
   const navigate = useCallback(
@@ -107,7 +108,7 @@ export function CommandPalette({
           onValueChange={setQuery}
         />
         <CommandList>
-          {debouncedQuery.length >= 2 && !hasResults && (
+          {aiChatEnabled && debouncedQuery.length >= 2 && !hasResults && (
             <CommandGroup heading="Asistente IA">
               <CommandItem
                 onSelect={() => handleOpenChat(debouncedQuery)}
@@ -186,14 +187,16 @@ export function CommandPalette({
                     <span>Crear nuevo lead</span>
                   </CommandItem>
                 )}
-                <CommandItem
-                  onSelect={() =>
-                    handleOpenChat(debouncedQuery || undefined)
-                  }
-                >
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
-                  <span>Consultar al asistente IA</span>
-                </CommandItem>
+                {aiChatEnabled && (
+                  <CommandItem
+                    onSelect={() =>
+                      handleOpenChat(debouncedQuery || undefined)
+                    }
+                  >
+                    <Sparkles className="h-4 w-4 text-muted-foreground" />
+                    <span>Consultar al asistente IA</span>
+                  </CommandItem>
+                )}
               </CommandGroup>
 
               <CommandSeparator />

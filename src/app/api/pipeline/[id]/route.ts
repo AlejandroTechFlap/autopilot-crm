@@ -57,6 +57,25 @@ export async function GET(
     return jsonError('Failed to load deals', 500);
   }
 
+  // Defensive filter — drop any deal whose joined empresa came back null.
+  // Root cause: `deals` and `empresas` have independent RLS SELECT policies
+  // that each gate on `vendedor_asignado = auth.uid()` for vendedores. When
+  // the two `vendedor_asignado` columns diverge for a deal/empresa pair,
+  // the deal is visible but the PostgREST inner-join to empresas yields
+  // null — and downstream components (e.g. DealCard) dereference it.
+  // Filtering here keeps `PipelineDeal.empresa` non-nullable at the type
+  // boundary so no renderer needs a null guard.
+  const visibleDeals = (deals ?? []).filter((d) => {
+    if (!d.empresa) {
+      console.warn(
+        `[pipeline/${pipelineId}] Dropping orphaned deal ${d.id} — joined empresa is null. ` +
+        `Likely RLS mismatch: deals.vendedor_asignado differs from empresas.vendedor_asignado.`
+      );
+      return false;
+    }
+    return true;
+  });
+
   // Build phase map with tiempo_esperado
   const tiempoMap = new Map(
     fases.map((f) => [f.id, f.tiempo_esperado])
@@ -66,14 +85,14 @@ export async function GET(
   const now = new Date();
   const dealsByPhase = new Map<string, typeof enrichedDeals>();
 
-  type EnrichedDeal = (typeof deals)[number] & {
+  type EnrichedDeal = (typeof visibleDeals)[number] & {
     semaphore: string;
     days_in_phase: number;
     semaphore_pct: number;
   };
   const enrichedDeals: EnrichedDeal[] = [];
 
-  for (const deal of deals ?? []) {
+  for (const deal of visibleDeals) {
     const tiempo = tiempoMap.get(deal.fase_actual) ?? null;
     const sem = calculateSemaphore(deal.fecha_entrada_fase, tiempo, now);
 

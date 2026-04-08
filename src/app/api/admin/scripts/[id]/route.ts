@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { jsonError } from '@/lib/api-utils';
 import { requireAdmin } from '@/features/admin/lib/admin-guard';
+import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 
 const UpdateScriptSchema = z.object({
   titulo: z.string().min(1).max(200).optional(),
@@ -16,6 +17,8 @@ export async function PATCH(
 ) {
   const auth = await requireAdmin();
   if (auth instanceof Response) return auth;
+  const blocked = await assertFeatureFlag('feat_admin_scripts');
+  if (blocked) return blocked;
 
   const { id } = await params;
 
@@ -54,6 +57,8 @@ export async function DELETE(
 ) {
   const auth = await requireAdmin();
   if (auth instanceof Response) return auth;
+  const blocked = await assertFeatureFlag('feat_admin_scripts');
+  if (blocked) return blocked;
 
   const { id } = await params;
   const supabase = await createClient();

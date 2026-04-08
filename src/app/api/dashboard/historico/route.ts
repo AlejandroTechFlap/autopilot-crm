@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requireApiAuth, jsonError } from '@/lib/api-utils';
 import type { ApiUser } from '@/lib/api-utils';
 import type { NextRequest } from 'next/server';
+import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 
 function getPeriodDays(periodo: string): number {
   switch (periodo) {
@@ -20,6 +21,9 @@ export async function GET(request: NextRequest) {
   if (user.rol === 'vendedor') {
     return jsonError('Forbidden', 403);
   }
+
+  const blocked = await assertFeatureFlag('feat_dashboard_historico');
+  if (blocked) return blocked;
 
   const sp = request.nextUrl.searchParams;
   const tipo = sp.get('tipo') ?? 'pipeline_value';

@@ -4,6 +4,7 @@ import type { ApiUser } from '@/lib/api-utils';
 import type { NextRequest } from 'next/server';
 import { buildDrill } from '@/features/dashboard/lib/drill';
 import type { DrillType } from '@/features/dashboard/types';
+import { logger } from '@/lib/logger';
 
 const VALID_TIPOS: DrillType[] = [
   'pipeline_value',
@@ -41,7 +42,7 @@ export async function GET(
     const drill = await buildDrill(supabase, tipo, periodo);
     return Response.json(drill);
   } catch (err) {
-    console.error('Drill build failed', err);
+    logger.error({ scope: 'api.dashboard.drill', event: 'failed', err });
     return jsonError('Failed to build drill data', 500);
   }
 }

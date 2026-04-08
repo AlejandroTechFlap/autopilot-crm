@@ -26,6 +26,8 @@ import { requireApiAuth, jsonError } from '@/lib/api-utils';
 import type { ApiUser } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 import {
   getClient,
   getModel,
@@ -51,6 +53,12 @@ export async function POST(request: Request) {
   const auth = await requireApiAuth();
   if (auth instanceof Response) return auth;
   const user = auth as ApiUser;
+
+  const blocked = await assertFeatureFlag('feat_ai_chat');
+  if (blocked) return blocked;
+
+  const limit = rateLimit(`ai:chat:${user.id}`, 20, 60_000);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   const body = await request.json().catch(() => null);
   const parsed = ChatRequestSchema.safeParse(body);

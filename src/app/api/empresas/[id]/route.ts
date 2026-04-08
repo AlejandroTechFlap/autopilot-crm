@@ -75,6 +75,20 @@ export async function PATCH(
 
   const supabase = await createClient();
 
+  // Capture the previous vendedor so we can tell whether this PATCH is
+  // actually changing ownership (and thus whether we need to cascade to
+  // open deals — see below).
+  const newVendedorId = parsed.data.vendedor_asignado;
+  let previousVendedorId: string | null = null;
+  if (newVendedorId) {
+    const { data: current } = await supabase
+      .from('empresas')
+      .select('vendedor_asignado')
+      .eq('id', id)
+      .single();
+    previousVendedorId = current?.vendedor_asignado ?? null;
+  }
+
   const { data: updated, error } = await supabase
     .from('empresas')
     .update(parsed.data)
@@ -84,6 +98,31 @@ export async function PATCH(
 
   if (error) {
     return jsonError('Failed to update company: ' + error.message);
+  }
+
+  // Cascade vendedor reassignment to OPEN deals on this empresa.
+  // Without this, the child deals would retain the previous vendedor and
+  // vendedor-scoped RLS would then hide the empresa from the deal's
+  // new-empresa-owner (or the old deal-owner). Closed deals (resultado set)
+  // keep their historical vendedor so MTD/prev-MTD KPI attribution stays
+  // accurate.
+  if (newVendedorId && previousVendedorId && newVendedorId !== previousVendedorId) {
+    const { error: cascadeError } = await supabase
+      .from('deals')
+      .update({ vendedor_asignado: newVendedorId })
+      .eq('empresa_id', id)
+      .is('resultado', null);
+
+    if (cascadeError) {
+      console.error(
+        `[empresas/${id}] vendedor cascade to open deals failed:`,
+        cascadeError.message
+      );
+      return jsonError(
+        'Company updated but failed to reassign open deals: ' + cascadeError.message,
+        500
+      );
+    }
   }
 
   return Response.json({ empresa: updated });

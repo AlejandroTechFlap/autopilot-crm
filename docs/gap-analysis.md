@@ -4,11 +4,12 @@
 > `/home/john/Desktop/Projects/CRM/MVP - HTML y Playbook/Autopilot_CRM_Especificacion_Tecnica_Desarrollo.md`.
 > Status legend: **DONE** = implemented and tested · **PARTIAL** = some pieces missing · **MISSING** = not built yet.
 
-Last reviewed: 2026-04-07. Recent changes: Phase 8 UI polish shipped; full
-Spanish UI sweep with glossary in [`i18n.md`](./i18n.md); root-redirect moved
-from `app/page.tsx` into `src/lib/supabase/middleware.ts` to avoid the Next.js
-16 dev-mode `RootPage` performance bug (see
-[`phase-2-pipeline-company.md`](./phase-2-pipeline-company.md)).
+Last reviewed: 2026-04-08. Recent changes: `/mis-tareas` overdue TZ fix +
+shared task calendar panel mounted in the cockpit right sidebar (§16); seed
+overhaul — date-relative + full Phase 10 coverage (§15); Phase 10
+multi-instance per-tenant install (§14). Phase 9 empresa task calendar was
+shipped in the prior review; production readiness pass (CSP, rate limits,
+security.txt, health probe, logging audit) is documented in §13.
 
 ## 1. Data model (16 tables)
 
@@ -218,3 +219,88 @@ from `app/page.tsx` into `src/lib/supabase/middleware.ts` to avoid the Next.js
 8. **Email + Slack notification channels**. Admin-configurable (Phase 7).
 9. **Realtime visual highlight** when an incoming `deals` change is received.
 10. **Historical charts**: leads nuevos/mes, tiempo medio cierre.
+
+## 13. Production readiness audit (2026-04-07)
+
+Full pre-production pass. Every item below is **DONE**.
+
+| Area | Action | Result |
+|------|--------|--------|
+| Build blocker | Split `CrmUser` + `hasRole` into `src/lib/auth-client.ts` so `'use client'` components no longer drag `next/headers` in via `@/lib/auth`. | `pnpm build` green on Turbopack. |
+| Lint errors | `prefer-const` in `api/search`; four `react-hooks/set-state-in-effect` sites wrapped in `startTransition`. | 0 errors. |
+| Lint warnings | 8 unused-symbol warnings resolved (`useRef`, `Button`, `Link`, `jsonError`, `actSpark`, `Search`, `empresaId`, `refresh`, cookie `options` pass-through). | 0 warnings. |
+| CSP + headers | `src/proxy.ts` now applies `Content-Security-Policy-Report-Only`, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Strict-Transport-Security` (prod only). Report-Only first rollout — flip to enforce after a week of clean reports. | Applied to every non-asset response. |
+| Rate limiting | In-memory LRU token bucket (`src/lib/rate-limit.ts`, 10k-key cap). Applied: `/api/chat` 20/60s, `/api/chat/summary` 5/60s, `/api/search` 60/60s per user. Login is handled client-side by Supabase, so auth limits live upstream. | 429 with `Retry-After` on breach. |
+| `robots.txt` | `Disallow: /` — CRM is internal. | Shipped in `public/`. |
+| `.well-known/security.txt` | RFC 9116, contact `security@flap.consulting`, expires 2027-04-07. | Shipped in `public/.well-known/`. |
+| Error page leak audit | `(dashboard)/error.tsx` now shows `error.message` only in dev; `error.digest` rendered as an opaque `Ref:` in prod. Global + not-found pages already clean. | No stack / DB error leaks to the browser. |
+| Logging audit | All `console.*` call sites reviewed. The only survivors are the `logger.ts` transport itself and the `error.tsx` useEffect (server-side). `api/dashboard/drill/[tipo]` migrated to `logger.error`. | No raw PII / secrets in logs. |
+| Health probe | New `GET /api/health` returns `{ status: 'ok', ts }`. Liveness-only by design — does not query Supabase. | Dockerfile `HEALTHCHECK` wired via Node's built-in `http`. |
+
+## 14. Phase 10 — Multi-instance per-tenant install (2026-04-08, IMPLEMENTED)
+
+Preparing the CRM for per-customer installs: one repo clone + one Supabase
+project per customer, same code and same migrations everywhere. Per-install
+customisation via three mechanisms, all runtime-editable from the admin UI:
+
+1. **Branding** — logo, colors, company info in a singleton `configuracion_tenant` row.
+2. **Custom fields** — tenant-defined JSONB fields on `empresas`, `contactos`, `deals` via a `campos_personalizados` definition table.
+3. **Feature flags** — a fixed catalog of boolean toggles on `configuracion_tenant` (AI chat, morning summary, KPIs, etc.).
+
+Bootstrap config (Supabase URL, AI API keys) stays in `.env.local` — infra
+stays in infra. Migrations are identical across all installs.
+
+Full spec: [`phase-10-multi-instance.md`](./phase-10-multi-instance.md).
+
+| Step | Scope | Status |
+|------|-------|--------|
+| 1 | Migration 010 — `configuracion_tenant`, `campos_personalizados`, JSONB columns, storage bucket, RLS, singleton seed | DONE |
+| 2 | Regenerate `src/types/database.ts` | DONE |
+| 3 | Tenant loader (`get-tenant-config.ts`) + `TenantProvider` context + `useFeatureFlag` hook; wired into `(dashboard)/layout.tsx` | DONE |
+| 4 | `/admin/branding` — logo upload, color pickers, company info; sidebar picks up logo + name | DONE |
+| 5 | `/admin/funcionalidades` — feature toggles; hard-404 enforcement via `assertFeatureFlag` (APIs) and `requireFeatureFlag` (pages); client-side conditional mounts for ChatPanel, MorningSummary, CommandPalette, EmpresaTaskCalendar, dashboard historico charts + sparklines, and AI chat commands in the palette | DONE |
+| 6 | `/admin/campos` — custom field definitions CRUD + `GET/POST/PATCH/DELETE /api/admin/campos` (migration 011 adds `delete_campo_personalizado(p_id)` for transactional JSONB strip per D3) | DONE 2026-04-08 |
+| 7 | `CustomFieldsForm` rendered in `create-lead-modal` (empresa + contacto + deal in one POST) + read-only "Campos personalizados" card on empresa detail; `/api/deals` POST re-validates server-side via `validateCamposPersonalizados` and persists JSONB. `lead-form-fields.tsx` extracted from `create-lead-modal.tsx` to stay under the 300-line cap. | DONE 2026-04-08 |
+| 8 | Full verification — `npx tsc --noEmit` clean, `pnpm lint` clean, `pnpm build` clean (all 56 routes generated). Runtime smoke + dual-install brand/flag visual diff are manual user-guide steps. | DONE 2026-04-08 |
+| 9 | Doc flip — phase-10 spec `[DRAFT]` → `[IMPLEMENTED]`, CLAUDE.md row, this section | DONE 2026-04-08 |
+
+## 15. Seed overhaul — date-relative, full-coverage demo data (2026-04-08, IMPLEMENTED)
+
+Alejandro flagged that the demo drifted away from "today" as the calendar
+moved, and that the cockpit's "Tareas pendientes / Tareas vencidas" cards
+looked like the same metric with two different numbers. The seed also left
+entire features dark (bell empty, Phase 10 custom-field card never rendered,
+dirección historical chart flat, comisiones trend missing).
+
+Full spec: [`seed.md`](./seed.md).
+
+| Part | Scope | Status |
+|------|-------|--------|
+| 1 | `supabase/seed/seed-date.ts` — `SEED_TODAY` + `dayOffset` / `dateOffset` / `monthOffset` helpers (env-var override for pinned-day demos). Every hard-coded ISO string in the seed migrated to a helper call. | DONE |
+| 2a | Core entities expanded — empresas 11→16, contactos 15→25, deals 15→18 active + 6 history, actividades 38→64. | DONE |
+| 2b | Tareas 6→**18** with deterministic distribution (Ignacio 8 / Laura 8 / Rebeca 2). Ignacio KPI payload on seed-day: `tareas_pendientes=6`, `tareas_vencidas=2`. | DONE |
+| 2c | `notificaciones` 0→**12** (4 per vendedor, mix of `leido` true/false, all linkable `tipo` values). | DONE |
+| 2d | Phase 10 seeded — `configuracion_tenant` singleton (UPDATE — migration 010 pre-INSERTs via `DEFAULT VALUES`), 7 `campos_personalizados` definitions (3 empresa + 2 contacto + 2 deal), JSONB values populated on 4 empresas + 3 contactos + 2 deals. | DONE |
+| 2e | Comisiones 2→6 across last 3 months, `kpi_snapshots` 3→**120** (30 days × 4 KPI types, deterministic sine drift). | DONE |
+| 3 | UI label audit — `personal-kpis.tsx` adds subtitles to the two tareas KPI cards ("Incluye hoy y futuras" / "Fecha límite pasada") so the metrics are visually unambiguous. | DONE |
+| 4 | Docs — new `docs/seed.md` (single source of truth), user-guide test-user table refreshed with seed-day expected state, this section, CLAUDE.md status row, phase-10 spec cross-link. | DONE |
+
+## 16. /mis-tareas calendar + "3 vs 2" overdue fix (2026-04-08, IMPLEMENTED)
+
+Alejandro flagged a visual inconsistency: the `/mis-tareas` task list rendered
+"VENCIDAS (3)" (VetPartners 04 abr + Animalia 06 abr + PetShop Madrid 07 abr)
+while the "Mis KPIs" card showed `Tareas vencidas: 2`. Root cause was a
+timezone bug in the client-only overdue helpers — `new Date("YYYY-MM-DD")`
+parses as UTC midnight, which in UTC-5 (Bogotá) shifts the rendered day back
+by one and incorrectly flags today's task as overdue. The server-side KPI
+query was correct (`2`). In the same breath he asked for the empresa task
+calendar widget to also appear on `/mis-tareas`, above the Scripts card.
+
+| Part | Scope | Status |
+|------|-------|--------|
+| 1 | `src/lib/formatting.ts` — central `parsePlainDate()` helper, TZ-safe `formatDate()` for plain `YYYY-MM-DD` strings, new `isOverdueDate()` that compares against a locally-computed today-key. | DONE |
+| 2 | `task-card.tsx` and `task-list.tsx` drop their local buggy `isOverdue()` copies and import `isOverdueDate` from `@/lib/formatting`. Both files now agree with the server KPI query. | DONE |
+| 3 | `src/features/cockpit/components/task-calendar-panel.tsx` — new presentational component extracted from `empresa-task-calendar.tsx` (calendar + selected-day tasks + overdue + no-date buckets + Nueva tarea modal). Takes `tasks`, `loading`, `onComplete`, `onCreated`, `userId`, optional `empresaId` as props. | DONE |
+| 4 | `empresa-task-calendar.tsx` refactored from 220→60 lines as a thin data-fetching wrapper around the shared panel. Public signature unchanged. | DONE |
+| 5 | `cockpit-client.tsx` adds a new "Calendario de tareas" card between KPIs and Scripts. Reuses the tasks from the existing `useTasks()` call — no additional network requests. | DONE |
+| 6 | Docs — this section, phase-9 spec updated with the shared-component note, CLAUDE.md status row annotated. | DONE |

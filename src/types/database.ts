@@ -105,6 +105,42 @@ export type Database = {
           },
         ]
       }
+      campos_personalizados: {
+        Row: {
+          clave: string
+          created_at: string
+          entidad: Database["public"]["Enums"]["entidad_personalizable"]
+          etiqueta: string
+          id: string
+          obligatorio: boolean
+          opciones: Json | null
+          orden: number
+          tipo: Database["public"]["Enums"]["tipo_campo_personalizado"]
+        }
+        Insert: {
+          clave: string
+          created_at?: string
+          entidad: Database["public"]["Enums"]["entidad_personalizable"]
+          etiqueta: string
+          id?: string
+          obligatorio?: boolean
+          opciones?: Json | null
+          orden?: number
+          tipo: Database["public"]["Enums"]["tipo_campo_personalizado"]
+        }
+        Update: {
+          clave?: string
+          created_at?: string
+          entidad?: Database["public"]["Enums"]["entidad_personalizable"]
+          etiqueta?: string
+          id?: string
+          obligatorio?: boolean
+          opciones?: Json | null
+          orden?: number
+          tipo?: Database["public"]["Enums"]["tipo_campo_personalizado"]
+        }
+        Relationships: []
+      }
       comisiones: {
         Row: {
           created_at: string
@@ -153,8 +189,80 @@ export type Database = {
           },
         ]
       }
+      configuracion_tenant: {
+        Row: {
+          color_acento: string
+          color_primario: string
+          direccion: string | null
+          email_contacto: string | null
+          feat_admin_kpis: boolean
+          feat_admin_scripts: boolean
+          feat_ai_chat: boolean
+          feat_command_palette: boolean
+          feat_dashboard_historico: boolean
+          feat_empresa_task_cal: boolean
+          feat_morning_summary: boolean
+          feat_notifications: boolean
+          id: string
+          logo_url: string | null
+          nombre_empresa: string
+          telefono: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          color_acento?: string
+          color_primario?: string
+          direccion?: string | null
+          email_contacto?: string | null
+          feat_admin_kpis?: boolean
+          feat_admin_scripts?: boolean
+          feat_ai_chat?: boolean
+          feat_command_palette?: boolean
+          feat_dashboard_historico?: boolean
+          feat_empresa_task_cal?: boolean
+          feat_morning_summary?: boolean
+          feat_notifications?: boolean
+          id?: string
+          logo_url?: string | null
+          nombre_empresa?: string
+          telefono?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          color_acento?: string
+          color_primario?: string
+          direccion?: string | null
+          email_contacto?: string | null
+          feat_admin_kpis?: boolean
+          feat_admin_scripts?: boolean
+          feat_ai_chat?: boolean
+          feat_command_palette?: boolean
+          feat_dashboard_historico?: boolean
+          feat_empresa_task_cal?: boolean
+          feat_morning_summary?: boolean
+          feat_notifications?: boolean
+          id?: string
+          logo_url?: string | null
+          nombre_empresa?: string
+          telefono?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracion_tenant_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contactos: {
         Row: {
+          campos_personalizados: Json
           cargo: string | null
           created_at: string
           email: string | null
@@ -165,6 +273,7 @@ export type Database = {
           telefono: string | null
         }
         Insert: {
+          campos_personalizados?: Json
           cargo?: string | null
           created_at?: string
           email?: string | null
@@ -175,6 +284,7 @@ export type Database = {
           telefono?: string | null
         }
         Update: {
+          campos_personalizados?: Json
           cargo?: string | null
           created_at?: string
           email?: string | null
@@ -196,6 +306,7 @@ export type Database = {
       }
       deals: {
         Row: {
+          campos_personalizados: Json
           cerrado_en: string | null
           created_at: string
           empresa_id: string
@@ -209,6 +320,7 @@ export type Database = {
           vendedor_asignado: string
         }
         Insert: {
+          campos_personalizados?: Json
           cerrado_en?: string | null
           created_at?: string
           empresa_id: string
@@ -222,6 +334,7 @@ export type Database = {
           vendedor_asignado: string
         }
         Update: {
+          campos_personalizados?: Json
           cerrado_en?: string | null
           created_at?: string
           empresa_id?: string
@@ -267,6 +380,7 @@ export type Database = {
       }
       empresas: {
         Row: {
+          campos_personalizados: Json
           categoria: Database["public"]["Enums"]["categoria_empresa"] | null
           created_at: string
           descripcion: string | null
@@ -285,6 +399,7 @@ export type Database = {
           vendedor_asignado: string
         }
         Insert: {
+          campos_personalizados?: Json
           categoria?: Database["public"]["Enums"]["categoria_empresa"] | null
           created_at?: string
           descripcion?: string | null
@@ -303,6 +418,7 @@ export type Database = {
           vendedor_asignado: string
         }
         Update: {
+          campos_personalizados?: Json
           categoria?: Database["public"]["Enums"]["categoria_empresa"] | null
           created_at?: string
           descripcion?: string | null
@@ -777,6 +893,10 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["rol_usuario"]
       }
+      delete_campo_personalizado: {
+        Args: { p_id: string }
+        Returns: number
+      }
     }
     Enums: {
       canal_notificacion: "in_app" | "email" | "slack"
@@ -787,6 +907,7 @@ export type Database = {
         | "retail"
         | "servicios"
         | "otro"
+      entidad_personalizable: "empresa" | "contacto" | "deal"
       estado_notificacion: "enviada" | "fallida" | "pendiente"
       fuente_lead:
         | "ads"
@@ -808,6 +929,12 @@ export type Database = {
       resultado_deal: "ganado" | "perdido"
       rol_usuario: "admin" | "direccion" | "vendedor"
       tipo_actividad: "llamada" | "nota" | "reunion" | "cambio_fase" | "sistema"
+      tipo_campo_personalizado:
+        | "texto"
+        | "numero"
+        | "seleccion"
+        | "fecha"
+        | "booleano"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -944,6 +1071,7 @@ export const Constants = {
         "servicios",
         "otro",
       ],
+      entidad_personalizable: ["empresa", "contacto", "deal"],
       estado_notificacion: ["enviada", "fallida", "pendiente"],
       fuente_lead: [
         "ads",
@@ -967,6 +1095,13 @@ export const Constants = {
       resultado_deal: ["ganado", "perdido"],
       rol_usuario: ["admin", "direccion", "vendedor"],
       tipo_actividad: ["llamada", "nota", "reunion", "cambio_fase", "sistema"],
+      tipo_campo_personalizado: [
+        "texto",
+        "numero",
+        "seleccion",
+        "fecha",
+        "booleano",
+      ],
     },
   },
 } as const

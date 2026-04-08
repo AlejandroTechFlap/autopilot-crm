@@ -18,7 +18,9 @@ import type { NextRequest } from 'next/server';
 import { requireApiAuth, jsonError } from '@/lib/api-utils';
 import type { ApiUser } from '@/lib/api-utils';
 import { logger } from '@/lib/logger';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
+import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 import { getClient, getModel, buildRoleContext } from '@/features/ai-chat/lib/gemini';
 import { getKpisVendedor, getKpisDireccion } from '@/features/ai-chat/lib/tools/kpis';
 
@@ -36,6 +38,12 @@ export async function GET(request: NextRequest) {
   const auth = await requireApiAuth();
   if (auth instanceof Response) return auth;
   const user = auth as ApiUser;
+
+  const blocked = await assertFeatureFlag('feat_morning_summary');
+  if (blocked) return blocked;
+
+  const limit = rateLimit(`ai:summary:${user.id}`, 5, 60_000);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   const refresh = request.nextUrl.searchParams.get('refresh') === '1';
   const fecha = todayISO();

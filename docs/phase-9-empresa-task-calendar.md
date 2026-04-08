@@ -1,4 +1,16 @@
-# Phase 9: Empresa Task Calendar [DRAFT]
+# Phase 9: Empresa Task Calendar [IMPLEMENTED]
+
+> Shipped and mounted on the empresa detail page at
+> `src/app/(dashboard)/empresa/[id]/client.tsx`. Component lives at
+> `src/features/empresa/components/empresa-task-calendar.tsx`. Status flipped
+> to IMPLEMENTED on 2026-04-07.
+>
+> **2026-04-08 update:** the presentational calendar was extracted into
+> `src/features/cockpit/components/task-calendar-panel.tsx` and is now also
+> mounted on `/mis-tareas` (cockpit right sidebar, above Scripts). The
+> cockpit reuses the tasks already fetched by `useTasks()` — no extra
+> network calls. `EmpresaTaskCalendar` is now a thin data wrapper around
+> the shared panel.
 
 ## Overview
 
@@ -49,7 +61,8 @@ above `Contactos`. Layout:
 |------|---------|------------|
 | `src/app/api/tareas/route.ts` | Add optional `empresa_id` query param to GET | +5 |
 | `src/features/cockpit/components/create-task-modal.tsx` | Add optional `empresaId` prop, included in POST body when set | +6 |
-| `src/features/empresa/components/empresa-task-calendar.tsx` | New client component — calendar + selected-day list + create button | ≤ 220 |
+| `src/features/empresa/components/empresa-task-calendar.tsx` | Thin data wrapper that fetches the empresa's tasks and delegates to `TaskCalendarPanel` | ≤ 70 |
+| `src/features/cockpit/components/task-calendar-panel.tsx` | Shared presentational calendar + day buckets + create button. Consumed by both the empresa wrapper and the cockpit sidebar | ≤ 220 |
 | `src/app/(dashboard)/empresa/[id]/page.tsx` | Pass current `userId` to client | +3 |
 | `src/app/(dashboard)/empresa/[id]/client.tsx` | Render the new card; thread `userId` to it | +8 |
 

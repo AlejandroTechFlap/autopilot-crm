@@ -8,6 +8,7 @@ import { ChartCard } from './dashboard-charts';
 import { VendedorTable } from './vendedor-table';
 import { KpiDrillDialog } from './kpi-drill-dialog';
 import { useDashboardKpis, useChartData } from '../hooks/use-dashboard';
+import { useFeatureFlag } from '@/features/tenant/lib/tenant-context';
 import { formatCurrency } from '@/lib/formatting';
 import type { DrillType, Periodo } from '../types';
 
@@ -26,11 +27,11 @@ export function DashboardClient() {
   const [periodo, setPeriodo] = useState<Periodo>('month');
   const [drillTipo, setDrillTipo] = useState<DrillType | null>(null);
   const { data, loading } = useDashboardKpis(periodo);
+  const historicoEnabled = useFeatureFlag('feat_dashboard_historico');
 
-  // Sparkline data for KPI tiles
-  const { series: pipelineSpark } = useChartData('pipeline_value', periodo);
-  const { series: wonSpark } = useChartData('deals_ganados', periodo);
-  const { series: actSpark } = useChartData('actividades', periodo);
+  // Sparkline data for KPI tiles (skipped when historico feature is off)
+  const { series: pipelineSpark } = useChartData('pipeline_value', periodo, historicoEnabled);
+  const { series: wonSpark } = useChartData('deals_ganados', periodo, historicoEnabled);
 
   return (
     <div className="space-y-6">
@@ -90,37 +91,39 @@ export function DashboardClient() {
             />
           </div>
 
-          {/* Charts */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <ChartCard
-              title="Valor del pipeline"
-              tipo="pipeline_value"
-              periodo={periodo}
-              variant="area"
-              color="#0D7377"
-            />
-            <ChartCard
-              title="Negocios ganados"
-              tipo="deals_ganados"
-              periodo={periodo}
-              variant="bar"
-              color="#14B8A6"
-            />
-            <ChartCard
-              title="Actividades"
-              tipo="actividades"
-              periodo={periodo}
-              variant="line"
-              color="#0E9488"
-            />
-            <ChartCard
-              title="Tasa de conversión"
-              tipo="conversion"
-              periodo={periodo}
-              variant="line"
-              color="#F59E0B"
-            />
-          </div>
+          {/* Charts (feat_dashboard_historico) */}
+          {historicoEnabled && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <ChartCard
+                title="Valor del pipeline"
+                tipo="pipeline_value"
+                periodo={periodo}
+                variant="area"
+                color="#0D7377"
+              />
+              <ChartCard
+                title="Negocios ganados"
+                tipo="deals_ganados"
+                periodo={periodo}
+                variant="bar"
+                color="#14B8A6"
+              />
+              <ChartCard
+                title="Actividades"
+                tipo="actividades"
+                periodo={periodo}
+                variant="line"
+                color="#0E9488"
+              />
+              <ChartCard
+                title="Tasa de conversión"
+                tipo="conversion"
+                periodo={periodo}
+                variant="line"
+                color="#F59E0B"
+              />
+            </div>
+          )}
 
           {/* Per-seller table */}
           <Card>

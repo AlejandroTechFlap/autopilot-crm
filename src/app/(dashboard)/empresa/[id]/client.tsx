@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { EmpresaHeader } from '@/features/empresa/components/empresa-header';
@@ -12,6 +11,12 @@ import { EmpresaDeals } from '@/features/empresa/components/empresa-deals';
 import { EmpresaTimeline } from '@/features/empresa/components/empresa-timeline';
 import { EmpresaActions } from '@/features/empresa/components/empresa-actions';
 import { EmpresaTaskCalendar } from '@/features/empresa/components/empresa-task-calendar';
+import { useFeatureFlag } from '@/features/tenant/lib/tenant-context';
+import { renderCampoValue } from '@/features/tenant/lib/custom-fields';
+import type {
+  CampoPersonalizado,
+  CustomFieldsMap,
+} from '@/features/tenant/types';
 import type { Database } from '@/types/database';
 
 type Empresa = Database['public']['Tables']['empresas']['Row'];
@@ -41,13 +46,19 @@ interface EmpresaData extends Empresa {
 interface EmpresaDetailClientProps {
   empresa: EmpresaData;
   userId: string;
+  /** Phase 10 — custom field definitions for `entidad === 'empresa'`. */
+  empresaCampos: CampoPersonalizado[];
 }
 
 export function EmpresaDetailClient({
   empresa,
   userId,
+  empresaCampos,
 }: EmpresaDetailClientProps) {
   const [timelineKey, setTimelineKey] = useState(0);
+  const taskCalendarEnabled = useFeatureFlag('feat_empresa_task_cal');
+  // The DB column is generic `Json`; narrow it once for the render loop.
+  const camposValues = (empresa.campos_personalizados ?? {}) as CustomFieldsMap;
 
   const reloadTimeline = useCallback(() => {
     setTimelineKey((k) => k + 1);
@@ -92,7 +103,7 @@ export function EmpresaDetailClient({
               <CardTitle className="text-sm">Oportunidades</CardTitle>
             </CardHeader>
             <CardContent>
-              <EmpresaDeals deals={empresa.deals} empresaId={empresa.id} />
+              <EmpresaDeals deals={empresa.deals} />
             </CardContent>
           </Card>
 
@@ -113,14 +124,16 @@ export function EmpresaDetailClient({
         {/* Right column — sidebar info */}
         <div className="space-y-6">
           {/* Tasks calendar */}
-          <Card className="gap-5 py-6">
-            <CardHeader className="px-6 pb-3">
-              <CardTitle className="text-sm">Tareas</CardTitle>
-            </CardHeader>
-            <CardContent className="px-6">
-              <EmpresaTaskCalendar empresaId={empresa.id} userId={userId} />
-            </CardContent>
-          </Card>
+          {taskCalendarEnabled && (
+            <Card className="gap-5 py-6">
+              <CardHeader className="px-6 pb-3">
+                <CardTitle className="text-sm">Tareas</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <EmpresaTaskCalendar empresaId={empresa.id} userId={userId} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Contacts */}
           <Card className="gap-5 py-6">
@@ -131,6 +144,28 @@ export function EmpresaDetailClient({
               <EmpresaContacts contactos={empresa.contactos} />
             </CardContent>
           </Card>
+
+          {/* Phase 10 — read-only custom fields. Skipped entirely when no
+              definitions exist for `entidad === 'empresa'`. */}
+          {empresaCampos.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Campos personalizados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="space-y-2 text-sm">
+                  {empresaCampos.map((def) => (
+                    <div key={def.id} className="flex justify-between gap-3">
+                      <dt className="text-muted-foreground">{def.etiqueta}</dt>
+                      <dd className="text-right text-foreground">
+                        {renderCampoValue(def, camposValues[def.clave] ?? null)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Notes */}
           {empresa.notas_internas && (

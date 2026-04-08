@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { KanbanBoard } from '@/features/pipeline/components/kanban-board';
 import { CreateLeadModal } from '@/features/pipeline/components/create-lead-modal';
 import { usePipeline } from '@/features/pipeline/hooks/use-pipeline';
+import type { CampoPersonalizado } from '@/features/tenant/types';
 
 interface PipelineClientProps {
   pipelineId: string;
@@ -11,12 +12,19 @@ interface PipelineClientProps {
   canCreateLead: boolean;
   /** List of vendedores for the create-lead assignment dropdown. Empty for vendedores. */
   vendedores: { id: string; nombre: string }[];
+  /** Phase 10 — custom field definitions per entity, server-loaded. Empty for vendedores. */
+  empresaCampos: CampoPersonalizado[];
+  contactoCampos: CampoPersonalizado[];
+  dealCampos: CampoPersonalizado[];
 }
 
 export function PipelineClient({
   pipelineId,
   canCreateLead,
   vendedores,
+  empresaCampos,
+  contactoCampos,
+  dealCampos,
 }: PipelineClientProps) {
   const [showCreateLead, setShowCreateLead] = useState(false);
 
@@ -32,7 +40,6 @@ export function PipelineClient({
         data={data}
         loading={loading}
         error={error}
-        refresh={refresh}
         applyOptimisticMove={applyOptimisticMove}
         canCreateLead={canCreateLead}
         onCreateLead={() => setShowCreateLead(true)}
@@ -44,6 +51,9 @@ export function PipelineClient({
           onOpenChange={setShowCreateLead}
           onCreated={refresh}
           vendedores={vendedores}
+          empresaCampos={empresaCampos}
+          contactoCampos={contactoCampos}
+          dealCampos={dealCampos}
         />
       )}
     </div>

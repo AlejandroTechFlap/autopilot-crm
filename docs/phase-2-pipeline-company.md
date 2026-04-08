@@ -109,6 +109,35 @@ Response:
 }
 ```
 
+### RLS + vendedor cascade (empresas ↔ deals) [IMPLEMENTED]
+
+`empresas` and `deals` have independent SELECT policies in
+`006_rls_policies.sql` that each gate on `vendedor_asignado = auth.uid()` for
+vendedores. If a deal and its parent empresa ever diverge on
+`vendedor_asignado`, the deal remains visible to the deal owner but the
+PostgREST inner-join to empresas (`empresa:empresas!deals_empresa_id_fkey(...)`)
+returns `null` for that row — crashing any renderer that assumes
+`deal.empresa` is present.
+
+Two guardrails keep the two columns in sync:
+
+1. **`GET /api/pipeline/[id]` filter** — the route drops any deal whose
+   joined `empresa` is null and logs a warning with the orphaned deal id.
+   This protects the kanban against any residual drift and keeps
+   `PipelineDeal.empresa` non-nullable at the type boundary.
+2. **`PATCH /api/empresas/[id]` vendedor cascade** — when the payload sets
+   `vendedor_asignado` to a new value, the handler also runs
+   `UPDATE deals SET vendedor_asignado = ... WHERE empresa_id = ... AND resultado IS NULL`
+   in the same request. Only OPEN deals cascade; closed-won/lost deals keep
+   their historical vendedor so MTD / prev-MTD KPI attribution remains
+   correct. If the cascade fails the endpoint returns `500` with a message
+   noting the company was updated but the deal reassignment failed.
+
+Seed data (`supabase/seed/deals-history.ts`) enforces the same invariant:
+every synthetic history deal is assigned to the same vendedor as its parent
+empresa. Team-KPI signal is preserved by picking empresas owned by both
+vendedores (3 Ignacio + 3 Laura), not by free-mixing ownership.
+
 ### PATCH /api/deals/[id]/mover
 Body: `{ "fase_destino": "uuid" }`
 - Updates `fase_actual`, resets `fecha_entrada_fase` to NOW

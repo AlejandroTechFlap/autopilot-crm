@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { startTransition, useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sidebar, MobileSidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { hasRole, type CrmUser } from '@/lib/auth';
+import { hasRole, type CrmUser } from '@/lib/auth-client';
+import type { TenantConfig } from '@/features/tenant/types';
 
 // GlobalOverlays bundles cmdk + Gemini SDK chunks. Lazy-load to keep the
 // initial dashboard payload small.
@@ -26,10 +27,12 @@ const CHAT_OPEN_STORAGE_KEY = 'autopilot:chat-open';
 
 interface DashboardShellProps {
   user: CrmUser;
+  tenant: TenantConfig;
   children: React.ReactNode;
 }
 
-export function DashboardShell({ user, children }: DashboardShellProps) {
+export function DashboardShell({ user, tenant, children }: DashboardShellProps) {
+  const aiChatEnabled = tenant.flags.feat_ai_chat;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatSeed, setChatSeed] = useState<string | undefined>(undefined);
@@ -38,7 +41,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(CHAT_OPEN_STORAGE_KEY);
-      if (saved === '1') setChatOpen(true);
+      if (saved === '1') startTransition(() => setChatOpen(true));
     } catch {
       // ignore (private mode etc.)
     }
@@ -67,9 +70,10 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar user={user} />
+      <Sidebar user={user} tenant={tenant} />
       <MobileSidebar
         user={user}
+        tenant={tenant}
         open={mobileMenuOpen}
         onOpenChange={setMobileMenuOpen}
       />
@@ -79,16 +83,20 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           {children}
         </main>
         {/* Floating toggle (anchored to the main column so it follows the
-            shrink when the chat panel docks open) */}
-        <Button
-          onClick={toggleChat}
-          size="icon"
-          aria-label={chatOpen ? 'Cerrar asistente IA' : 'Abrir asistente IA'}
-          aria-pressed={chatOpen}
-          className="absolute bottom-6 right-6 z-40 h-12 w-12 rounded-full shadow-lg"
-        >
-          <Sparkles className="h-5 w-5" />
-        </Button>
+            shrink when the chat panel docks open). Hidden entirely when the
+            AI chat feature flag is off so the surface looks identical to a
+            tenant that never had it. */}
+        {aiChatEnabled && (
+          <Button
+            onClick={toggleChat}
+            size="icon"
+            aria-label={chatOpen ? 'Cerrar asistente IA' : 'Abrir asistente IA'}
+            aria-pressed={chatOpen}
+            className="absolute bottom-6 right-6 z-40 h-12 w-12 rounded-full shadow-lg"
+          >
+            <Sparkles className="h-5 w-5" />
+          </Button>
+        )}
         <GlobalOverlays
           onOpenChat={openChat}
           canCreateLead={canCreateLead}
@@ -96,11 +104,13 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
       </div>
       {/* Docked, non-modal AI chat panel — flex sibling so the main column
           reflows instead of being covered by an overlay. */}
-      <ChatPanel
-        open={chatOpen}
-        onClose={closeChat}
-        initialMessage={chatSeed}
-      />
+      {aiChatEnabled && (
+        <ChatPanel
+          open={chatOpen}
+          onClose={closeChat}
+          initialMessage={chatSeed}
+        />
+      )}
     </div>
   );
 }

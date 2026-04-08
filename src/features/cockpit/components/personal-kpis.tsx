@@ -21,6 +21,7 @@ interface PersonalKpisProps {
 const KPI_ITEMS: {
   key: keyof PersonalKpisType;
   label: string;
+  sublabel?: string;
   icon: React.ElementType;
   format: (v: number) => string;
   alertWhen?: (v: number) => boolean;
@@ -40,12 +41,14 @@ const KPI_ITEMS: {
   {
     key: 'tareas_pendientes',
     label: 'Tareas pendientes',
+    sublabel: 'Incluye hoy y futuras',
     icon: ListTodo,
     format: (v) => String(v),
   },
   {
     key: 'tareas_vencidas',
     label: 'Tareas vencidas',
+    sublabel: 'Fecha límite pasada',
     icon: AlertTriangle,
     format: (v) => String(v),
     alertWhen: (v) => v > 0,
@@ -77,7 +80,7 @@ export function PersonalKpis({ kpis, loading }: PersonalKpisProps) {
 
   return (
     <div className="space-y-2">
-      {KPI_ITEMS.map(({ key, label, icon: Icon, format, alertWhen }) => {
+      {KPI_ITEMS.map(({ key, label, sublabel, icon: Icon, format, alertWhen }) => {
         const value = kpis[key];
         const isAlert = alertWhen?.(value) ?? false;
 
@@ -94,6 +97,9 @@ export function PersonalKpis({ kpis, loading }: PersonalKpisProps) {
                 >
                   {format(value)}
                 </p>
+                {sublabel && (
+                  <p className="text-[10px] text-muted-foreground">{sublabel}</p>
+                )}
               </div>
             </CardContent>
           </Card>

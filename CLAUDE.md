@@ -22,7 +22,7 @@ Specs live in `docs/`. Read [`docs/README.md`](./docs/README.md) for the full in
 Every phase has its own doc (`phase-2-…` through `phase-7-…`). Update the spec **before**
 writing code, mark `[DRAFT]`, implement, then mark `[IMPLEMENTED]`.
 
-## Current state (2026-04-07)
+## Current state (2026-04-08)
 
 | Phase | Scope | Status |
 |-------|-------|--------|
@@ -34,13 +34,16 @@ writing code, mark `[DRAFT]`, implement, then mark `[IMPLEMENTED]`.
 | 6 | Cmd+K palette, polish, Docker deploy | IMPLEMENTED |
 | 7 | Admin suite (pipelines, scripts, users, notifications, KPIs) | IMPLEMENTED |
 | 8 | UI/UX polish (loading skeletons, error boundary, not-found page) | IMPLEMENTED |
-| 9 | Empresa task calendar widget | DRAFT |
+| 9 | Empresa task calendar widget (also mounted on `/mis-tareas` sidebar 2026-04-08) | IMPLEMENTED |
+| 10 | Multi-instance per-tenant install (branding, custom fields, feature flags) | IMPLEMENTED |
 | — | Spanish-only UI sweep + glossary (`docs/i18n.md`) | IMPLEMENTED |
 | — | Root redirect moved to proxy (Next.js 16 RootPage perf bug fix) | IMPLEMENTED |
+| — | Seed overhaul — date-relative + full coverage (see `docs/seed.md`) | IMPLEMENTED |
 
 Outstanding work is tracked in [`docs/gap-analysis.md`](./docs/gap-analysis.md) §12.
-The next priority is **Phase 9 (empresa task calendar widget)** —
-see [`docs/phase-9-empresa-task-calendar.md`](./docs/phase-9-empresa-task-calendar.md).
+Production readiness pass (CSP, rate limits, security.txt, health probe,
+logging audit, error-page audit, full lint/build green) completed 2026-04-07 —
+see [§13](./docs/gap-analysis.md).
 
 ## Roles
 

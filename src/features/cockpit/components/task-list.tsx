@@ -1,6 +1,7 @@
 'use client';
 
 import { toast } from 'sonner';
+import { isOverdueDate } from '@/lib/formatting';
 import { TaskCard } from './task-card';
 import type { Task } from '../types';
 
@@ -8,11 +9,6 @@ interface TaskListProps {
   tasks: Task[];
   loading: boolean;
   onComplete: (taskId: string) => Promise<boolean>;
-}
-
-function isOverdue(date: string | null): boolean {
-  if (!date) return false;
-  return new Date(date) < new Date(new Date().toDateString());
 }
 
 export function TaskList({ tasks, loading, onComplete }: TaskListProps) {
@@ -31,12 +27,12 @@ export function TaskList({ tasks, loading, onComplete }: TaskListProps) {
     );
   }
 
-  const overdue = tasks.filter((t) => isOverdue(t.fecha_vencimiento));
+  const overdue = tasks.filter((t) => isOverdueDate(t.fecha_vencimiento));
   const alta = tasks.filter(
-    (t) => t.prioridad === 'alta' && !isOverdue(t.fecha_vencimiento)
+    (t) => t.prioridad === 'alta' && !isOverdueDate(t.fecha_vencimiento)
   );
   const normal = tasks.filter(
-    (t) => t.prioridad !== 'alta' && !isOverdue(t.fecha_vencimiento)
+    (t) => t.prioridad !== 'alta' && !isOverdueDate(t.fecha_vencimiento)
   );
 
   const handleComplete = async (taskId: string) => {

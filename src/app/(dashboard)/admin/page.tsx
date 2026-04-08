@@ -1,7 +1,18 @@
 import Link from 'next/link';
-import { Kanban, FileText, Users, Bell, BarChart3 } from 'lucide-react';
+import {
+  Kanban,
+  FileText,
+  Users,
+  Bell,
+  BarChart3,
+  Palette,
+  ToggleLeft,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/server';
+import { getTenantConfig } from '@/features/tenant/lib/get-tenant-config';
+import type { FeatureFlag } from '@/features/tenant/types';
 
 interface OverviewTile {
   href: string;
@@ -9,18 +20,26 @@ interface OverviewTile {
   icon: React.ComponentType<{ className?: string }>;
   count: number | string;
   description: string;
+  /** Hide this tile entirely when this feature flag is off (decision D4). */
+  flag?: FeatureFlag;
 }
 
 async function loadCounts() {
   const supabase = await createClient();
-  const [pipelines, phases, scripts, users, notifs, kpis] = await Promise.all([
-    supabase.from('pipelines').select('id', { count: 'exact', head: true }),
-    supabase.from('fases').select('id', { count: 'exact', head: true }),
-    supabase.from('scripts').select('id', { count: 'exact', head: true }),
-    supabase.from('usuarios').select('id', { count: 'exact', head: true }),
-    supabase.from('notificacion_config').select('id', { count: 'exact', head: true }),
-    supabase.from('kpi_config').select('id', { count: 'exact', head: true }),
-  ]);
+  const [pipelines, phases, scripts, users, notifs, kpis, campos] =
+    await Promise.all([
+      supabase.from('pipelines').select('id', { count: 'exact', head: true }),
+      supabase.from('fases').select('id', { count: 'exact', head: true }),
+      supabase.from('scripts').select('id', { count: 'exact', head: true }),
+      supabase.from('usuarios').select('id', { count: 'exact', head: true }),
+      supabase
+        .from('notificacion_config')
+        .select('id', { count: 'exact', head: true }),
+      supabase.from('kpi_config').select('id', { count: 'exact', head: true }),
+      supabase
+        .from('campos_personalizados')
+        .select('id', { count: 'exact', head: true }),
+    ]);
   return {
     pipelines: pipelines.count ?? 0,
     phases: phases.count ?? 0,
@@ -28,13 +47,31 @@ async function loadCounts() {
     users: users.count ?? 0,
     notifs: notifs.count ?? 0,
     kpis: kpis.count ?? 0,
+    campos: campos.count ?? 0,
   };
 }
 
 export default async function AdminOverviewPage() {
-  const counts = await loadCounts();
+  const [counts, tenant] = await Promise.all([loadCounts(), getTenantConfig()]);
+
+  const activeFlagCount = Object.values(tenant.flags).filter(Boolean).length;
+  const totalFlagCount = Object.keys(tenant.flags).length;
 
   const tiles: OverviewTile[] = [
+    {
+      href: '/admin/branding',
+      label: 'Marca',
+      icon: Palette,
+      count: tenant.brand.nombre_empresa,
+      description: 'Logo, colores y datos',
+    },
+    {
+      href: '/admin/funcionalidades',
+      label: 'Funcionalidades',
+      icon: ToggleLeft,
+      count: `${activeFlagCount} / ${totalFlagCount}`,
+      description: 'Módulos activos',
+    },
     {
       href: '/admin/pipelines',
       label: 'Pipelines',
@@ -43,11 +80,19 @@ export default async function AdminOverviewPage() {
       description: 'Pipelines · fases',
     },
     {
+      href: '/admin/campos',
+      label: 'Campos',
+      icon: SlidersHorizontal,
+      count: counts.campos,
+      description: 'Campos personalizados',
+    },
+    {
       href: '/admin/scripts',
       label: 'Scripts',
       icon: FileText,
       count: counts.scripts,
       description: 'Scripts de ventas',
+      flag: 'feat_admin_scripts',
     },
     {
       href: '/admin/usuarios',
@@ -62,6 +107,7 @@ export default async function AdminOverviewPage() {
       icon: Bell,
       count: counts.notifs,
       description: 'Reglas de disparo',
+      flag: 'feat_notifications',
     },
     {
       href: '/admin/kpis',
@@ -69,12 +115,17 @@ export default async function AdminOverviewPage() {
       icon: BarChart3,
       count: counts.kpis,
       description: 'Reglas de umbral',
+      flag: 'feat_admin_kpis',
     },
   ];
 
+  const visibleTiles = tiles.filter(
+    (tile) => !tile.flag || tenant.flags[tile.flag]
+  );
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {tiles.map((tile) => {
+      {visibleTiles.map((tile) => {
         const Icon = tile.icon;
         return (
           <Link key={tile.href} href={tile.href} className="block">

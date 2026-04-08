@@ -5,7 +5,7 @@ import { CheckCircle2, AlertTriangle, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PRIORIDAD_LABELS, PRIORIDAD_COLORS } from '@/lib/constants';
-import { formatCurrency, formatDate } from '@/lib/formatting';
+import { formatCurrency, formatDate, isOverdueDate } from '@/lib/formatting';
 import type { Task } from '../types';
 
 interface TaskCardProps {
@@ -13,13 +13,8 @@ interface TaskCardProps {
   onComplete: (taskId: string) => void;
 }
 
-function isOverdue(date: string | null): boolean {
-  if (!date) return false;
-  return new Date(date) < new Date(new Date().toDateString());
-}
-
 export function TaskCard({ task, onComplete }: TaskCardProps) {
-  const overdue = isOverdue(task.fecha_vencimiento);
+  const overdue = isOverdueDate(task.fecha_vencimiento);
 
   return (
     <Card className={overdue ? 'border-danger/30 bg-danger-light/30' : ''}>

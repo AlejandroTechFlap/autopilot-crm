@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { jsonError } from '@/lib/api-utils';
 import { requireAdmin } from '@/features/admin/lib/admin-guard';
+import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 
 const CreateScriptSchema = z.object({
   titulo: z.string().min(1).max(200),
@@ -14,6 +15,8 @@ const CreateScriptSchema = z.object({
 export async function GET() {
   const auth = await requireAdmin();
   if (auth instanceof Response) return auth;
+  const blocked = await assertFeatureFlag('feat_admin_scripts');
+  if (blocked) return blocked;
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -37,6 +40,8 @@ export async function GET() {
 export async function POST(request: Request) {
   const auth = await requireAdmin();
   if (auth instanceof Response) return auth;
+  const blocked = await assertFeatureFlag('feat_admin_scripts');
+  if (blocked) return blocked;
 
   let body: unknown;
   try {

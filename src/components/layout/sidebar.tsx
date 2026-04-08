@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -20,16 +21,16 @@ import {
   SheetContent,
   SheetTitle,
 } from '@/components/ui/sheet';
-import type { CrmUser } from '@/lib/auth';
-import type { Database } from '@/types/database';
-
-type RolUsuario = Database['public']['Enums']['rol_usuario'];
+import type { CrmUser, RolUsuario } from '@/lib/auth-client';
+import type { FeatureFlag, TenantConfig } from '@/features/tenant/types';
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: RolUsuario[];
+  /** Hide this entry entirely when this feature flag is off. */
+  flag?: FeatureFlag;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -43,13 +44,14 @@ const NAV_ITEMS: NavItem[] = [
 
 interface SidebarProps {
   user: CrmUser;
+  tenant: TenantConfig;
 }
 
 /** Desktop sidebar — hidden on mobile */
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, tenant }: SidebarProps) {
   return (
     <aside className="hidden h-full w-60 flex-col border-r border-sidebar-border bg-sidebar md:flex">
-      <SidebarContent user={user} />
+      <SidebarContent user={user} tenant={tenant} />
     </aside>
   );
 }
@@ -57,6 +59,7 @@ export function Sidebar({ user }: SidebarProps) {
 /** Mobile sidebar — Sheet overlay */
 export function MobileSidebar({
   user,
+  tenant,
   open,
   onOpenChange,
 }: SidebarProps & { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -64,7 +67,11 @@ export function MobileSidebar({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-60 p-0" showCloseButton={false}>
         <SheetTitle className="sr-only">Navegación</SheetTitle>
-        <SidebarContent user={user} onNavigate={() => onOpenChange(false)} />
+        <SidebarContent
+          user={user}
+          tenant={tenant}
+          onNavigate={() => onOpenChange(false)}
+        />
       </SheetContent>
     </Sheet>
   );
@@ -72,26 +79,43 @@ export function MobileSidebar({
 
 function SidebarContent({
   user,
+  tenant,
   onNavigate,
 }: {
   user: CrmUser;
+  tenant: TenantConfig;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
 
-  const visibleItems = NAV_ITEMS.filter((item) =>
-    item.roles.includes(user.rol)
-  );
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (!item.roles.includes(user.rol)) return false;
+    if (item.flag && !tenant.flags[item.flag]) return false;
+    return true;
+  });
+
+  const { brand } = tenant;
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo */}
+      {/* Logo + brand name from tenant config */}
       <div className="flex h-14 items-center gap-2 px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Zap className="h-4 w-4 text-primary-foreground" />
-        </div>
-        <span className="text-sm font-semibold text-sidebar-foreground">
-          Autopilot CRM
+        {brand.logo_url ? (
+          <Image
+            src={brand.logo_url}
+            alt={brand.nombre_empresa}
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-lg object-contain"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <Zap className="h-4 w-4 text-primary-foreground" />
+          </div>
+        )}
+        <span className="truncate text-sm font-semibold text-sidebar-foreground">
+          {brand.nombre_empresa}
         </span>
       </div>
 

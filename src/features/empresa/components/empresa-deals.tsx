@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/formatting';
@@ -22,7 +21,6 @@ interface Deal {
 
 interface EmpresaDealsProps {
   deals: Deal[];
-  empresaId: string;
 }
 
 const RESULTADO_BADGE: Record<string, { label: string; className: string }> = {
@@ -30,7 +28,7 @@ const RESULTADO_BADGE: Record<string, { label: string; className: string }> = {
   perdido: { label: 'Perdida', className: 'bg-danger-light text-danger' },
 };
 
-export function EmpresaDeals({ deals, empresaId }: EmpresaDealsProps) {
+export function EmpresaDeals({ deals }: EmpresaDealsProps) {
   if (deals.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">Aún no hay oportunidades.</p>
