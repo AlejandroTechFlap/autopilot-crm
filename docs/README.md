@@ -32,6 +32,7 @@ hierarchy, and acceptance criteria.
 | — | [`i18n.md`](./i18n.md) | Spanish-only UI rule + glossary + per-file translation status | Living |
 | — | [`user-guide.md`](./user-guide.md) | End-user feature guide and step-by-step test scenarios | Living |
 | — | [`seed.md`](./seed.md) | Seed system: date-relative anchoring, entity coverage, helpers, test-user starting state | Living |
+| — | [`deploy-vps.md`](./deploy-vps.md) | VPS deployment guide: Docker, reverse proxy, subdomain setup | DRAFT |
 
 ## 2. Source-of-truth spec from the customer
 

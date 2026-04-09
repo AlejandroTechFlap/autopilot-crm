@@ -90,6 +90,19 @@ API routes mirror the same tree under `src/app/api/`. Admin endpoints live under
 - For Supabase inserts/updates that touch JSONB columns, cast to `Json` from
   `@/types/database` — `Record<string, unknown>` is too broad for the generated type.
 
+## Deployment
+
+| Item | Value |
+|------|-------|
+| VPS | `root@49.13.25.179` (Hetzner) |
+| Subdomain | `crm.{domain}` — base domain TBD (discover on VPS) |
+| Container port | 3000 |
+| Health check | `GET /api/health` |
+| Docker | Multi-stage Dockerfile + `docker-compose.yml` |
+| Env vars | `.env.local` (4 vars — see `.env.example`) |
+
+Full deployment guide: [`docs/deploy-vps.md`](./docs/deploy-vps.md).
+
 ## Testing
 
 End-to-end manual testing is documented in [`docs/user-guide.md`](./docs/user-guide.md).
