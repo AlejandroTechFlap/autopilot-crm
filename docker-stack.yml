@@ -1,0 +1,36 @@
+# Docker Swarm stack for VPS deployment (crm.dev.flapconsulting.com)
+# Usage:
+#   docker build -t autopilot-crm:latest .
+#   export $(grep -v '^#' .env.local | xargs)
+#   docker stack deploy -c docker-stack.yml autopilot-crm
+
+services:
+  app:
+    image: autopilot-crm:latest
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - FlapDevNet
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.crm.rule=Host(`crm.dev.flapconsulting.com`)"
+        - "traefik.http.routers.crm.entrypoints=websecure"
+        - "traefik.http.routers.crm.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.crm.loadbalancer.server.port=3000"
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+
+networks:
+  FlapDevNet:
+    external: true

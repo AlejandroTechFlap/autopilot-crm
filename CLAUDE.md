@@ -94,11 +94,14 @@ API routes mirror the same tree under `src/app/api/`. Admin endpoints live under
 
 | Item | Value |
 |------|-------|
-| VPS | `root@49.13.25.179` (Hetzner) |
-| Subdomain | `crm.{domain}` — base domain TBD (discover on VPS) |
+| VPS | `root@49.13.25.179` (Hetzner, Ubuntu 24.04) |
+| URL | `https://crm.dev.flapconsulting.com` |
+| Orchestration | Docker Swarm (`docker-stack.yml`) |
+| Reverse proxy | Traefik v3.5.3 on `FlapDevNet` overlay network |
+| Cert resolver | `letsencryptresolver` |
 | Container port | 3000 |
 | Health check | `GET /api/health` |
-| Docker | Multi-stage Dockerfile + `docker-compose.yml` |
+| Stacks dir | `/opt/stacks/autopilot-crm/` |
 | Env vars | `.env.local` (4 vars — see `.env.example`) |
 
 Full deployment guide: [`docs/deploy-vps.md`](./docs/deploy-vps.md).
