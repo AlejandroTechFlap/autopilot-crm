@@ -19,18 +19,26 @@
 
 ## Deploy steps
 
-### 1. Build image
+### 1. Create `.env.local`
 
 ```bash
 cd /opt/stacks/autopilot-crm
-docker build -t autopilot-crm:latest .
-```
-
-### 2. Create `.env.local`
-
-```bash
 cp .env.example .env.local
 # Fill in the 4 values (Supabase URL, publishable key, service role key, Gemini key)
+```
+
+### 2. Build image
+
+Next.js inlines `NEXT_PUBLIC_*` into the client bundle at build time, so they
+must be passed as build args (`.env.local` is excluded by `.dockerignore`).
+
+```bash
+cd /opt/stacks/autopilot-crm
+source .env.local
+docker build \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+  --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
+  -t autopilot-crm:latest .
 ```
 
 ### 3. Deploy stack
@@ -66,7 +74,11 @@ Expected: `{ "status": "ok" }` and `/login` loads.
 ```bash
 cd /opt/stacks/autopilot-crm
 git pull
-docker build -t autopilot-crm:latest .
+source .env.local
+docker build \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+  --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
+  -t autopilot-crm:latest .
 docker service update --force autopilot-crm_app
 ```
 
