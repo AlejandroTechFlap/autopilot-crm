@@ -2,6 +2,8 @@
 
 # Autopilot CRM — Project Notes for Claude
 
+**Repository:** `https://github.com/Flap-Consulting-Internal/autopilot-crm`
+
 > Read this file at the start of every session. It points to the up-to-date specs and
 > summarises project state so you do not have to re-derive context.
 
@@ -36,6 +38,7 @@ writing code, mark `[DRAFT]`, implement, then mark `[IMPLEMENTED]`.
 | 8 | UI/UX polish (loading skeletons, error boundary, not-found page) | IMPLEMENTED |
 | 9 | Empresa task calendar widget (also mounted on `/mis-tareas` sidebar 2026-04-08) | IMPLEMENTED |
 | 10 | Multi-instance per-tenant install (branding, custom fields, feature flags) | IMPLEMENTED |
+| 11 | AI data analytics + interactive visualization (SQL queries, charts, tables, citations) | IMPLEMENTED |
 | — | Spanish-only UI sweep + glossary (`docs/i18n.md`) | IMPLEMENTED |
 | — | Root redirect moved to proxy (Next.js 16 RootPage perf bug fix) | IMPLEMENTED |
 | — | Seed overhaul — date-relative + full coverage (see `docs/seed.md`) | IMPLEMENTED |
