@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autopilot CRM — Dirección</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F7;--surface:#FFFFFF;--surface-alt:#F0F1F3;
+  --border:#E2E4E9;--border-hover:#CACDD5;
+  --text-1:#111827;--text-2:#4B5563;--text-3:#9CA3AF;
+  --accent:#0D7377;--accent-hover:#0A5C5F;--accent-light:#F0FDFA;
+  --green:#059669;--green-bg:#ECFDF5;--green-text:#065F46;
+  --amber:#D97706;--amber-bg:#FFFBEB;--amber-text:#92400E;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-text:#991B1B;
+  --blue:#2563EB;--blue-bg:#DBEAFE;
+  --radius:8px;--radius-sm:6px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.12)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text-1);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
+.view{display:none}.view.active{display:block}
+
+
+.topbar{display:flex;align-items:center;gap:16px;padding:0 28px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.topbar-logo{font-weight:700;font-size:17px;color:var(--accent);letter-spacing:-.4px;display:flex;align-items:baseline;gap:6px}
+.topbar-logo span{color:var(--text-3);font-weight:400;font-size:12px;text-transform:uppercase;letter-spacing:1.5px}
+.topbar-nav{display:flex;align-items:center;gap:2px;margin-left:36px}
+.topbar-nav button{font-family:var(--font);font-size:13px;font-weight:500;padding:7px 14px;border:none;background:none;color:var(--text-2);cursor:pointer;border-radius:var(--radius-sm);transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.topbar-nav button:hover{background:var(--accent-light);color:var(--accent);transform:scale(1.12)}
+.topbar-nav button.active{background:var(--accent);color:#fff;font-weight:600}
+.topbar-nav button.active:hover{transform:scale(1.08);background:var(--accent-hover)}
+.topbar-nav button:hover + button,.topbar-nav button:has(+ button:hover){transform:scale(1.04)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar-user{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;letter-spacing:.3px;transition:transform .2s;cursor:pointer}
+.topbar-user:hover{transform:scale(1.1)}
+.topbar-notif{position:relative;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+.topbar-notif .notif-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+/* ===== PIPELINE ===== */
+
+
+
+
+
+/* --- NAV --- */
+
+/* --- PIPELINE HEADER --- */
+.pipeline-header { padding: 20px 24px 12px; display: flex; align-items: center; justify-content: space-between; }
+.pipeline-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+.pipeline-stats { display: flex; gap: 16px; }
+.stat-chip { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; background: var(--surface); border: 1px solid var(--border); }
+.stat-chip b { color: var(--text-1); font-weight: 700; }
+.pipeline-filters { display: flex; gap: 8px; padding: 0 24px 16px; }
+.filter-btn { font-family: var(--font); font-size: 12px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); color: var(--text-2); cursor: pointer; transition: all .25s cubic-bezier(.4,0,.2,1); transform-origin: center bottom; }
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+/* --- KANBAN --- */
+.kanban { display: flex; gap: 12px; padding: 0 24px 24px; overflow-x: auto; min-height: calc(100vh - 180px); }
+.column { min-width: 260px; max-width: 280px; flex: 1; display: flex; flex-direction: column; }
+.column-head { padding: 10px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.column-dot { width: 8px; height: 8px; border-radius: 50%; }
+.column-name { font-size: 13px; font-weight: 500; flex: 1; }
+.column-count { font-size: 11px; color: var(--text-3); background: var(--surface-alt); padding: 2px 7px; border-radius: 10px; }
+.column-value { font-size: 11px; font-weight: 600; color: var(--text-1); }
+.column-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+/* --- DEAL CARD --- */
+.deal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; cursor: pointer; transition: all .2s; position: relative; }
+.deal-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.deal-card .company { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.deal-card .value { font-size: 18px; font-weight: 700; color: var(--text-1); letter-spacing: -0.5px; }
+.deal-card .meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--text-3); }
+.deal-card .meta-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+.deal-card .next-action { margin-top: 8px; font-size: 11px; color: var(--text-2); padding: 4px 8px; background: var(--surface-alt); border-radius: var(--radius-sm); display: inline-block; }
+.deal-card .semaphore { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.sem-green { background: var(--green); box-shadow: 0 0 0 3px var(--green-bg); }
+.sem-green::after { content: "✓"; font-size: 8px; color: #fff; font-weight: 700; }
+.sem-amber { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-bg); }
+.sem-amber::after { content: "!"; font-size: 9px; color: #fff; font-weight: 700; }
+.sem-red { background: var(--red); box-shadow: 0 0 0 3px var(--red-bg); animation: pulse-r 2s infinite; }
+.sem-red::after { content: "✕"; font-size: 7px; color: #fff; font-weight: 700; }
+@keyframes pulse-r { 0%,100%{box-shadow: 0 0 0 3px var(--red-bg)} 50%{box-shadow: 0 0 0 5px rgba(220,38,38,.15)} }
+.deal-card .avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: white; }
+.tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+.tag-ads { background: var(--blue-bg); color: var(--blue); }
+.tag-organic { background: var(--green-bg); color: var(--green-text); }
+.tag-referral { background: var(--amber-bg); color: var(--amber-text); }
+
+/* --- DETAIL PANEL (M2) --- */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 200; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.overlay.open { opacity: 1; pointer-events: all; }
+.detail-panel { position: fixed; top: 0; right: -580px; width: 560px; max-width: 90vw; height: 100%; background: var(--surface); z-index: 210; overflow-y: auto; transition: right .3s cubic-bezier(.4,0,.2,1); box-shadow: var(--shadow-lg); }
+.detail-panel.open { right: 0; }
+.dp-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; position: sticky; top: 0; background: var(--surface); z-index: 5; }
+.dp-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-2); transition: all .15s; flex-shrink: 0; }
+.dp-close:hover { background: var(--surface-alt); }
+.dp-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.dp-subtitle { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.dp-section { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.dp-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-3); margin-bottom: 12px; }
+.dp-field { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; }
+.dp-field-label { color: var(--text-2); }
+.dp-field-value { font-weight: 500; text-align: right; max-width: 60%; }
+.dp-field-value a { color: var(--accent); text-decoration: none; }
+.dp-contacts { display: flex; flex-direction: column; gap: 8px; }
+.dp-contact { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-alt); }
+.dp-contact .avatar { flex-shrink: 0; }
+.dp-contact-info { flex: 1; }
+.dp-contact-name { font-size: 13px; font-weight: 500; }
+.dp-contact-role { font-size: 11px; color: var(--text-3); }
+.dp-contact-channels { font-size: 11px; color: var(--text-2); }
+.dp-contact .primary-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+/* --- TIMELINE --- */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+.tl-line { position: absolute; left: 15px; top: 34px; bottom: -10px; width: 1px; background: var(--border); }
+.tl-item:last-child .tl-line { display: none; }
+.tl-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; z-index: 1; }
+.tl-dot.call { border-color: var(--green); color: var(--green); }
+.tl-dot.note { border-color: var(--amber); color: var(--amber); }
+.tl-dot.phase { border-color: var(--accent); color: var(--accent); }
+.tl-dot.meeting { border-color: var(--blue); color: var(--blue); }
+.tl-content { flex: 1; }
+.tl-text { font-size: 13px; }
+.tl-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* --- ACTION BUTTONS --- */
+.action-bar { display: flex; gap: 6px; padding: 16px 24px; position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); }
+.action-btn { font-family: var(--font); font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text-1); cursor: pointer; transition: all .15s; flex: 1; text-align: center; }
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.action-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.action-btn.primary:hover { background: #0A5C5F; }
+
+/* --- OPPORTUNITIES --- */
+.opp-list { display: flex; flex-direction: column; gap: 6px; }
+.opp-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-alt); font-size: 12px; }
+.opp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.opp-name { flex: 1; font-weight: 500; }
+.opp-value { font-weight: 700; color: var(--text-1); }
+.opp-phase { color: var(--text-3); }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .kanban { padding: 0 12px 12px; gap: 8px; }
+  .column { min-width: 220px; }
+  .detail-panel { width: 100%; }
+}
+
+/* ===== DASHBOARD ===== */
+
+
+
+
+
+
+/* TOPBAR */
+  display:flex;align-items:center;gap:16px;padding:0 28px;height:56px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100
+}
+  font-family:var(--font);font-size:13px;font-weight:500;
+  padding:7px 14px;border:none;background:none;color:var(--text-2);
+  cursor:pointer;border-radius:var(--radius-sm);
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+  transform-origin:center bottom;
+}
+  background:var(--accent-light);color:var(--accent);
+  transform:scale(1.12);
+}
+  background:var(--accent);color:#fff;font-weight:600;
+}
+  transform:scale(1.08);background:var(--accent-hover);
+}
+/* Grow neighbors slightly on hover */
+  transform:scale(1.04);
+}
+  width:32px;height:32px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;letter-spacing:.3px;
+  transition:transform .2s;cursor:pointer;
+}
+
+/* DASHBOARD */
+.dash-header{padding:28px 28px 0;display:flex;align-items:flex-end;justify-content:space-between}
+.dash-title{font-size:22px;font-weight:700;letter-spacing:-.5px;color:var(--text-1)}
+.dash-subtitle{font-size:13px;color:var(--text-3);margin-top:2px;font-weight:400}
+.dash-period{display:flex;gap:4px}
+.dash-period button{
+  font-family:var(--font);font-size:12px;font-weight:500;
+  padding:6px 14px;border:1px solid var(--border);border-radius:20px;
+  background:var(--surface);color:var(--text-2);cursor:pointer;
+  transition:all .15s
+}
+.dash-period button:hover{border-color:var(--border-hover);color:var(--text-1)}
+.dash-period button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px 28px 0}
+.kpi-grid .wide{grid-column:span 2}
+.kpi-tile{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden
+}
+.kpi-tile:hover{border-color:var(--border-hover);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px}
+/* SEMAPHORE — icon-based status indicators */
+.kpi-sem{width:20px;height:20px;border-radius:50%;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.kpi-sem::after{font-size:11px;font-weight:700;line-height:1;color:#fff}
+.sem-g{background:var(--green);box-shadow:0 0 0 3px var(--green-bg),0 0 8px rgba(5,150,105,.25)}
+.sem-g::after{content:'✓';font-size:10px}
+.sem-a{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg),0 0 8px rgba(217,119,6,.25)}
+.sem-a::after{content:'!';font-size:11px}
+.sem-r{background:var(--red);box-shadow:0 0 0 3px var(--red-bg),0 0 8px rgba(220,38,38,.3);animation:pulse-r 2s infinite}
+.sem-r::after{content:'✕';font-size:9px}
+@keyframes pulse-r{0%,100%{box-shadow:0 0 0 3px var(--red-bg),0 0 8px rgba(220,38,38,.3)}50%{box-shadow:0 0 0 5px rgba(220,38,38,.15),0 0 14px rgba(220,38,38,.2)}}
+.kpi-value{font-size:30px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--text-1)}
+.kpi-bottom{display:flex;align-items:center;gap:10px;margin-top:10px}
+.kpi-change{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:10px}
+.change-up{background:var(--green-bg);color:var(--green-text)}
+.change-down{background:var(--red-bg);color:var(--red-text)}
+.change-neutral{background:var(--surface-alt);color:var(--text-3)}
+.kpi-vs{font-size:11px;color:var(--text-3)}
+.sparkline-wrap{height:36px;margin-top:8px}
+.kpi-hint{font-size:11px;color:var(--text-3);margin-top:6px;opacity:.7;transition:opacity .15s}
+.kpi-tile:hover .kpi-hint{opacity:1}
+
+/* DRILL-DOWN PANEL */
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(2px)}
+.overlay.open{opacity:1;pointer-events:all}
+.drill-panel{position:fixed;top:0;right:-620px;width:600px;max-width:92vw;height:100%;background:var(--surface);z-index:210;overflow-y:auto;transition:right .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-lg)}
+.drill-panel.open{right:0}
+.dp-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;position:sticky;top:0;background:var(--surface);z-index:5}
+.dp-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-2);flex-shrink:0;transition:all .15s}
+.dp-close:hover{background:var(--surface-alt)}
+.dp-title{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.dp-subtitle{font-size:13px;color:var(--text-2);margin-top:2px}
+.dp-
+.dp-section{margin-bottom:24px}
+.dp-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:12px}
+
+/* CHART CONTAINER */
+.chart-box{background:var(--surface-alt);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.chart-box canvas{width:100%!important;height:200px!important}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;font-weight:600;color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.data-table td{padding:10px;border-bottom:1px solid var(--surface-alt)}
+.data-table tr:last-child td{border:none}
+.data-table .val{font-weight:700;color:var(--text-1)}
+.data-table .sem-dot{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-right:6px;vertical-align:middle}
+.data-table .sem-dot.sem-g{background:var(--green);box-shadow:0 0 0 2px var(--green-bg)}
+.data-table .sem-dot.sem-g::after{content:'✓';font-size:7px;color:#fff;font-weight:700}
+.data-table .sem-dot.sem-a{background:var(--amber);box-shadow:0 0 0 2px var(--amber-bg)}
+.data-table .sem-dot.sem-a::after{content:'!';font-size:8px;color:#fff;font-weight:700}
+.data-table .sem-dot.sem-r{background:var(--red);box-shadow:0 0 0 2px var(--red-bg)}
+.data-table .sem-dot.sem-r::after{content:'✕';font-size:7px;color:#fff;font-weight:700}
+
+/* BAR INLINE */
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar-track{flex:1;height:6px;background:var(--surface-alt);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s}
+.bar-label{font-size:12px;font-weight:600;min-width:36px;text-align:right}
+
+/* TOP OPP TABLE */
+.opp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:4px;background:var(--surface-alt);transition:all .15s}
+.opp-row:hover{background:var(--border);transform:translateX(2px)}
+.opp-rank{font-size:16px;font-weight:700;color:var(--text-3);width:24px;text-align:center}
+.opp-info{flex:1}
+.opp-company{font-size:13px;font-weight:600}
+.opp-detail{font-size:11px;color:var(--text-3);font-weight:400}
+.opp-value{font-size:15px;font-weight:700;color:var(--text-1)}
+.opp-sem{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.opp-sem::after{font-weight:700;color:#fff}
+.opp-sem.sem-g{background:var(--green);box-shadow:0 0 0 2px var(--green-bg)}
+.opp-sem.sem-g::after{content:'✓';font-size:8px}
+.opp-sem.sem-a{background:var(--amber);box-shadow:0 0 0 2px var(--amber-bg)}
+.opp-sem.sem-a::after{content:'!';font-size:9px}
+.opp-sem.sem-r{background:var(--red);box-shadow:0 0 0 2px var(--red-bg)}
+.opp-sem.sem-r::after{content:'✕';font-size:7px}
+
+/* ACTIVITY GRID */
+.act-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.act-card{background:var(--surface-alt);border-radius:var(--radius-sm);padding:14px;text-align:center}
+.act-num{font-size:26px;font-weight:700;letter-spacing:-1px}
+.act-label{font-size:11px;color:var(--text-2);margin-top:2px;font-weight:500}
+.act-change{font-size:11px;font-weight:600;margin-top:4px}
+
+/* HISTORICAL SECTION */
+.hist-section{padding:0 28px 28px}
+.hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-top:8px;border-top:1px solid var(--border)}
+.hist-title{font-size:18px;font-weight:700;letter-spacing:-.3px;color:var(--text-1)}
+.hist-subtitle{font-size:12px;color:var(--text-3)}
+.hist-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:768px){.hist-grid{grid-template-columns:1fr}}
+.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all .2s}
+.hist-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.hist-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.hist-card-label{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px}
+.hist-card-value{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.hist-card-sub{font-size:11px;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.hist-card-sub .change{font-weight:600;padding:1px 6px;border-radius:8px;font-size:10px}
+.change-g{background:var(--green-bg);color:var(--green-text)}
+.change-r{background:var(--red-bg);color:var(--red-text)}
+.hist-chart{height:140px;position:relative}
+
+/* ===== BASE DE DATOS ===== */
+
+
+
+
+.page{padding:20px 24px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.page-actions{display:flex;gap:8px}
+.btn{font-family:var(--font);font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-1);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#0A5C5F}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-box{position:relative;flex:1;min-width:200px;max-width:360px}
+.search-box input{width:100%;padding:7px 10px 7px 32px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:12px;background:var(--surface);transition:border .15s}
+.search-box input:focus{outline:none;border-color:var(--accent)}
+.search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+.tab-bar{display:flex;gap:2px;margin-bottom:12px}
+.tab-btn{font-family:var(--font);font-size:13px;font-weight:500;padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;color:var(--text-2);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-btn:hover{color:var(--text-1)}
+.tab-count{font-size:11px;background:var(--surface-alt);padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:400;color:var(--text-3)}
+.views-bar{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.view-chip{font-size:11px;padding:5px 10px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.view-chip:hover{border-color:var(--accent);color:var(--accent)}
+.view-chip.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+thead{position:sticky;top:0;z-index:2}
+th{text-align:left;font-weight:500;color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;background:var(--surface-alt);border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:var(--accent)}
+th .sort{font-size:9px;margin-left:3px;opacity:.4}
+th.sorted .sort{opacity:1;color:var(--accent)}
+td{padding:10px 12px;border-bottom:1px solid var(--surface-alt);vertical-align:middle}
+tr:hover td{background:rgba(13,115,119,.02)}
+tr.selected td{background:var(--accent-light)}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px}
+.b-lead{background:var(--accent-light);color:var(--accent)}
+.b-contacted{background:var(--blue-bg);color:var(--blue)}
+.b-negotiation{background:var(--amber-bg);color:var(--amber-text)}
+.b-client{background:var(--green-bg);color:var(--green-text)}
+.b-lost{background:var(--surface-alt);color:var(--text-3)}
+.b-primary{background:var(--green-bg);color:var(--green-text)}
+.source-tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.s-ads{background:var(--blue-bg);color:var(--blue)}
+.s-organic{background:var(--green-bg);color:var(--green-text)}
+.s-referral{background:var(--amber-bg);color:var(--amber-text)}
+.s-bbdd{background:var(--surface-alt);color:var(--text-3)}
+.avatar-sm{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;vertical-align:middle;margin-right:4px}
+.link{color:var(--accent);text-decoration:none;font-weight:500;cursor:pointer}
+.link:hover{text-decoration:underline}
+.phone{color:var(--text-2);text-decoration:none}
+.phone:hover{color:var(--accent)}
+.val{font-weight:700;color:var(--text-1)}
+.relative-date{color:var(--text-2)}
+.relative-date.stale{color:var(--red-text)}
+.checkbox{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;font-size:12px;color:var(--text-3);border-top:1px solid var(--border);background:var(--surface)}
+.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 12px;background:var(--accent-light);border-radius:var(--radius-sm);margin-bottom:8px;font-size:12px;color:var(--accent)}
+.bulk-bar.visible{display:flex}
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">Autopilot<span>CRM</span></div>
+  <div class="topbar-nav">
+    <button onclick="showView('pipeline')" id="nav-pipeline">Pipeline</button>
+    <button onclick="showView('dashboard')" id="nav-dashboard">Dashboard</button>
+    <button onclick="showView('basedatos')" id="nav-basedatos">Base de datos</button>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-user" title="Rebeca — Dirección">RS</div>
+  </div>
+</div>
+<div class="view" id="view-pipeline">
+
+<div id="pipeline-view">
+  <div class="pipeline-header">
+    <div class="pipeline-title">Pipeline comercial</div>
+    <div class="pipeline-stats">
+      <span class="stat-chip"><b>18</b> deals activos</span>
+      <span class="stat-chip"><b>€127.400</b> en pipeline</span>
+    </div>
+  </div>
+  <div class="pipeline-filters">
+    <button class="filter-btn active">Todos</button>
+    <button class="filter-btn">Ignacio</button>
+    <button class="filter-btn">Laura</button>
+    <button class="filter-btn">Sector: Mascotas</button>
+    <button class="filter-btn">€ > 5.000</button>
+  </div>
+
+  <div class="kanban" id="kanban"></div>
+</div>
+
+<div class="overlay" id="pipe-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="pipe-detail-panel">
+  <div class="dp-header">
+    <button class="dp-close" onclick="closeDetail()">&#10005;</button>
+    <div>
+      <div class="dp-title" id="dp-title"></div>
+      <div class="dp-subtitle" id="dp-subtitle"></div>
+    </div>
+  </div>
+  <div id="dp-content"></div>
+  <div class="action-bar">
+    <button class="action-btn" onclick="alert('Llamada registrada ✓')">&#9742; Llamada</button>
+    <button class="action-btn" onclick="alert('Nota guardada ✓')">&#9998; Nota</button>
+    <button class="action-btn" onclick="alert('Reunión registrada ✓')">&#128197; Reunión</button>
+    <button class="action-btn primary" onclick="alert('Avanzar de fase ✓')">Avanzar fase &#8594;</button>
+  </div>
+</div></div>
+<div class="view" id="view-dashboard">
+
+<div class="dash-header">
+  <div>
+    <div class="dash-title">Dashboard comercial</div>
+    <div class="dash-subtitle">Vista de dirección · Datos actualizados hace 5 min</div>
+  </div>
+  <div class="dash-period">
+    <button>7 días</button>
+    <button class="active">Este mes</button>
+    <button>Trimestre</button>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <!-- KPI 1: Pipeline total -->
+  <div class="kpi-tile" onclick="openDrill('pipeline')">
+    <div class="kpi-top">
+      <span class="kpi-label">Pipeline activo vs objetivo</span>
+      <span class="kpi-sem sem-a" title="Ámbar: entre 60% y 80% del objetivo"></span>
+    </div>
+    <div class="kpi-value">€127.400</div>
+    <div class="kpi-bottom">
+      <span class="kpi-change change-up">&#9650; 12%</span>
+      <span class="kpi-vs">vs mes anterior · Objetivo: €160.000</span>
+    </div>
+    <div class="sparkline-wrap"><canvas id="spark1"></canvas></div>
+    <div class="kpi-hint">Clic para ver desglose por fase y vendedor</div>
+  </div>
+
+  <!-- KPI 2: Conversión -->
+  <div class="kpi-tile" onclick="openDrill('conversion')">
+    <div class="kpi-top">
+      <span class="kpi-label">Conversión por etapa</span>
+      <span class="kpi-sem sem-g"></span>
+    </div>
+    <div class="kpi-value">34%</div>
+    <div class="kpi-bottom">
+      <span class="kpi-change change-up">&#9650; 3pp</span>
+      <span class="kpi-vs">vs mes anterior · Media sector: 28%</span>
+    </div>
+    <div class="sparkline-wrap"><canvas id="spark2"></canvas></div>
+    <div class="kpi-hint">Clic para ver funnel completo</div>
+  </div>
+
+  <!-- KPI 3: Actividad equipo -->
+  <div class="kpi-tile" onclick="openDrill('activity')">
+    <div class="kpi-top">
+      <span class="kpi-label">Actividad del equipo</span>
+      <span class="kpi-sem sem-g"></span>
+    </div>
+    <div class="kpi-value">87</div>
+    <div class="kpi-bottom">
+      <span class="kpi-change change-up">&#9650; 22%</span>
+      <span class="kpi-vs">actividades este mes · Mín: 60</span>
+    </div>
+    <div class="sparkline-wrap"><canvas id="spark3"></canvas></div>
+    <div class="kpi-hint">Clic para ver por vendedor y tipo</div>
+  </div>
+
+  <!-- KPI 4: Deals en riesgo -->
+  <div class="kpi-tile" onclick="openDrill('risk')">
+    <div class="kpi-top">
+      <span class="kpi-label">Deals en riesgo</span>
+      <span class="kpi-sem sem-r"></span>
+    </div>
+    <div class="kpi-value" style="color:var(--red)">3</div>
+    <div class="kpi-bottom">
+      <span class="kpi-change change-down">&#9650; 2</span>
+      <span class="kpi-vs">más que la semana pasada</span>
+    </div>
+    <div style="margin-top:10px">
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:12px;border-bottom:1px solid var(--surface-alt)">
+        <span class="kpi-sem sem-r" style="width:14px;height:14px"></span>
+        <span style="flex:1;font-weight:500">VetPartners Galicia</span>
+        <span style="color:var(--red-text);font-weight:600;font-size:11px">18d estancado</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:12px;border-bottom:1px solid var(--surface-alt)">
+        <span class="kpi-sem sem-a" style="width:14px;height:14px"></span>
+        <span style="flex:1;font-weight:500">La Caseta de los Animales</span>
+        <span style="color:var(--amber-text);font-weight:600;font-size:11px">12d en negociación</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:12px">
+        <span class="kpi-sem sem-a" style="width:14px;height:14px"></span>
+        <span style="flex:1;font-weight:500">Amor de Gato - CatShop</span>
+        <span style="color:var(--amber-text);font-weight:600;font-size:11px">7d sin respuesta</span>
+      </div>
+    </div>
+    <div class="kpi-hint">Clic para ver detalle completo</div>
+  </div>
+
+  <!-- KPI 5: Top 5 oportunidades -->
+  <div class="kpi-tile wide" onclick="openDrill('top5')">
+    <div class="kpi-top">
+      <span class="kpi-label">Top 5 oportunidades por valor</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+      <div class="opp-row"><span class="opp-rank">1</span><div class="opp-info"><div class="opp-company">Lobitos&Co S.L.</div><div class="opp-detail">Propuesta enviada · Ignacio · 6d</div></div><span class="opp-value">€22.000</span><span class="opp-sem sem-g"></span></div>
+      <div class="opp-row"><span class="opp-rank">2</span><div class="opp-info"><div class="opp-company">La Caseta de los Animales</div><div class="opp-detail">Negociación · Ignacio · 12d</div></div><span class="opp-value">€18.500</span><span class="opp-sem sem-a"></span></div>
+      <div class="opp-row"><span class="opp-rank">3</span><div class="opp-info"><div class="opp-company">Luna Perruna</div><div class="opp-detail">Seguimiento · Laura · 5d</div></div><span class="opp-value">€15.600</span><span class="opp-sem sem-g"></span></div>
+      <div class="opp-row"><span class="opp-rank">4</span><div class="opp-info"><div class="opp-company">VetPartners Galicia</div><div class="opp-detail">Negociación · Laura · 18d</div></div><span class="opp-value">€14.200</span><span class="opp-sem sem-r"></span></div>
+      <div class="opp-row"><span class="opp-rank">5</span><div class="opp-info"><div class="opp-company">Agropecuario Santa Lucía</div><div class="opp-detail">Contacto realizado · Ignacio · 4d</div></div><span class="opp-value">€12.300</span><span class="opp-sem sem-g"></span></div>
+    </div>
+    <div class="kpi-hint" style="margin-top:10px">Clic para ver pipeline completo ordenado por valor</div>
+  </div>
+</div>
+
+<!-- HISTORICAL KPIs -->
+<div class="hist-section">
+  <div class="hist-header">
+    <div>
+      <div class="hist-title">Rendimiento histórico</div>
+      <div class="hist-subtitle">Últimos 6 meses · Tendencias del negocio</div>
+    </div>
+  </div>
+
+  <div class="hist-grid">
+    <div class="hist-card">
+      <div class="hist-card-head">
+        <span class="hist-card-label">Ventas cerradas por mes</span>
+      </div>
+      <div class="hist-card-value" style="color:var(--green)">€47.200</div>
+      <div class="hist-card-sub">Acumulado últimos 6 meses <span class="change change-g">&#9650; 23% vs semestre anterior</span></div>
+      <div class="hist-chart"><canvas id="hist-ventas"></canvas></div>
+    </div>
+
+    <div class="hist-card">
+      <div class="hist-card-head">
+        <span class="hist-card-label">Leads nuevos por mes</span>
+      </div>
+      <div class="hist-card-value">14</div>
+      <div class="hist-card-sub">Media mensual <span class="change change-g">&#9650; 3 más que el semestre anterior</span></div>
+      <div class="hist-chart"><canvas id="hist-leads"></canvas></div>
+    </div>
+
+    <div class="hist-card">
+      <div class="hist-card-head">
+        <span class="hist-card-label">Tiempo medio de cierre (días)</span>
+      </div>
+      <div class="hist-card-value">24d</div>
+      <div class="hist-card-sub">Media últimos 6 meses <span class="change change-r">&#9650; 2d más que antes</span></div>
+      <div class="hist-chart"><canvas id="hist-ciclo"></canvas></div>
+    </div>
+
+    <div class="hist-card">
+      <div class="hist-card-head">
+        <span class="hist-card-label">Tasa de conversión global</span>
+      </div>
+      <div class="hist-card-value" style="color:var(--accent)">31%</div>
+      <div class="hist-card-sub">Media últimos 6 meses <span class="change change-g">&#9650; 4pp vs semestre anterior</span></div>
+      <div class="hist-chart"><canvas id="hist-conversion"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- DRILL-DOWN OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeDrill()"></div>
+<div class="drill-panel" id="drill-panel">
+  <div class="dp-header">
+    <button class="dp-close" onclick="closeDrill()">&#10005;</button>
+    <div>
+      <div class="dp-title" id="drill-title"></div>
+      <div class="dp-subtitle" id="drill-subtitle"></div>
+    </div>
+  </div>
+  <div class="dp-body" id="drill-body"></div>
+</div></div>
+<div class="view" id="view-basedatos">
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title" id="page-title">Base de datos</div>
+    <div class="page-actions">
+      <button class="btn" onclick="alert('Exportar vista actual a CSV')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar CSV</button>
+      <button class="btn" onclick="alert('Editar columnas visibles')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Columnas</button>
+      <button class="btn btn-primary" onclick="alert('Formulario: crear nueva empresa + contacto en un paso')">+ Nueva empresa</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-empresas" onclick="showTab('empresas')">Empresas<span class="tab-count" id="count-empresas">11</span></button>
+    <button class="tab-btn" id="tab-contactos" onclick="showTab('contactos')">Contactos<span class="tab-count" id="count-contactos">15</span></button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search" placeholder="Buscar empresa, contacto, teléfono o email..." oninput="filterTable()">
+    </div>
+  </div>
+
+  <div id="views-empresas" class="views-bar">
+    <span class="view-chip active" onclick="applyView('all',this)">Todas</span>
+    <span class="view-chip" onclick="applyView('mis',this)">Solo mis cuentas</span>
+    <span class="view-chip" onclick="applyView('clientes',this)">Clientes activos</span>
+    <span class="view-chip" onclick="applyView('frios',this)">Leads fríos (>7d)</span>
+    <span class="view-chip" onclick="applyView('ex',this)">Ex-clientes</span>
+  </div>
+  <div id="views-contactos" class="views-bar" style="display:none">
+    <span class="view-chip active" onclick="applyView('all',this)">Todos</span>
+    <span class="view-chip" onclick="applyView('mis-c',this)">Solo mis contactos</span>
+    <span class="view-chip" onclick="applyView('decisores',this)">Decisores</span>
+    <span class="view-chip" onclick="applyView('principales',this)">Contactos principales</span>
+  </div>
+
+  <div class="bulk-bar" id="bulk-bar">
+    <span id="bulk-count">0</span> seleccionados
+    <button class="btn" style="padding:4px 10px;font-size:11px" onclick="alert('Reasignar vendedor en bloque')">Reasignar</button>
+    <button class="btn" style="padding:4px 10px;font-size:11px" onclick="alert('Cambiar etiqueta en bloque')">Etiquetar</button>
+    <button class="btn" style="padding:4px 10px;font-size:11px" onclick="alert('Exportar selección')">Exportar</button>
+    <span style="margin-left:auto;cursor:pointer" onclick="clearSelection()">&#10005;</span>
+  </div>
+
+  <div class="table-wrap">
+    <table id="table-empresas">
+      <thead><tr>
+        <th style="width:30px"><input type="checkbox" class="checkbox" onchange="toggleAll(this,'empresas')"></th>
+        <th onclick="sortTable('empresas',0)">Empresa <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('empresas',1)">Lifecycle <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('empresas',2)">Contacto principal <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('empresas',3)">Teléfono</th>
+        <th onclick="sortTable('empresas',4)">Vendedor <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('empresas',5)">Valor total <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('empresas',6)">Deals</th>
+        <th onclick="sortTable('empresas',7)" class="sorted">Última actividad <span class="sort">&#9660;</span></th>
+        <th onclick="sortTable('empresas',8)">Fuente <span class="sort">&#9650;</span></th>
+        <th>Provincia</th>
+      </tr></thead>
+      <tbody id="tbody-empresas"></tbody>
+    </table>
+    <table id="table-contactos" style="display:none">
+      <thead><tr>
+        <th style="width:30px"><input type="checkbox" class="checkbox" onchange="toggleAll(this,'contactos')"></th>
+        <th onclick="sortTable('contactos',0)">Nombre <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('contactos',1)">Empresa <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('contactos',2)">Cargo <span class="sort">&#9650;</span></th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th>Principal</th>
+        <th onclick="sortTable('contactos',3)">Vendedor <span class="sort">&#9650;</span></th>
+        <th onclick="sortTable('contactos',4)" class="sorted">Última actividad <span class="sort">&#9660;</span></th>
+        <th onclick="sortTable('contactos',5)">Lifecycle <span class="sort">&#9650;</span></th>
+      </tr></thead>
+      <tbody id="tbody-contactos"></tbody>
+    </table>
+  </div>
+  <div class="status-bar">
+    <span id="status-text">Mostrando 11 empresas</span>
+    <span style="font-size:11px">Datos actualizados hace 5 min</span>
+  </div>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
+let currentView = null;
+let dashboardInitialized = false;
+
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.topbar-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.getElementById('nav-' + view).classList.add('active');
+  if (view === 'pipeline' && currentView !== 'pipeline') buildKanban();
+  if (view === 'dashboard' && !dashboardInitialized) { dashboardInitialized = true; setTimeout(initDashboardCharts, 150); }
+  if (view === 'basedatos' && currentView !== 'basedatos') renderEmpresas(empresas);
+  currentView = view;
+}
+
+/* ===== PIPELINE JS ===== */
+
+const COLORS = ['#0D7377','#00B894','#E17055','#0984E3','#FDCB6E','#E84393','#00CEC9','#636E72'];
+const leads = [
+  { id:1, company:'Clínica Animalia', contact:'Carmen Ruiz', role:'Directora', phone:'+34 612 345 678', email:'carmen@animalia.es', value:8500, days:2, phase:0, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'ADS', province:'Madrid', nextAction:'Enviar catálogo premium', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Carmen Ruiz',role:'Directora',phone:'+34 612 345 678',email:'carmen@animalia.es',primary:true},{name:'Andrés López',role:'Veterinario jefe',phone:'+34 623 456 789',email:'andres@animalia.es',primary:false}],
+    notes:'Cliente potencial con 3 centros en Madrid. Interesada en línea premium de alimentación natural.',
+    timeline:[
+      {type:'call',text:'Llamada inicial de 12 min. Carmen interesada en producto premium para sus 3 clínicas.',meta:'Hoy, 09:30 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Lead creado desde formulario web (campaña Google ADS Madrid)',meta:'Ayer, 14:20 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Alimentación premium x3 centros',value:'€8.500',phase:'Nuevo',color:'var(--accent)'}]
+  },
+  { id:2, company:'MimoPets - Todo para tu mascota', contact:'Jaime Torres', role:'Gerente', phone:'+34 634 567 890', email:'jaime@mimopets.com', value:4200, days:1, phase:0, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'ADS', province:'Valencia', nextAction:'Llamar para presentación', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Jaime Torres',role:'Gerente',phone:'+34 634 567 890',email:'jaime@mimopets.com',primary:true}],
+    notes:'Tienda online + física en Valencia. Buscando proveedor de accesorios.',
+    timeline:[
+      {type:'phase',text:'Lead creado desde campaña ADS Valencia',meta:'Hoy, 08:15 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Accesorios mascotas Q2',value:'€4.200',phase:'Nuevo',color:'var(--accent)'}]
+  },
+  { id:3, company:'Agropecuario Santa Lucía', contact:'Elena Morales', role:'Compradora', phone:'+34 645 678 901', email:'elena@agrosantalucia.es', value:12300, days:4, phase:1, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'Referral', province:'Sevilla', nextAction:'Confirmar reunión viernes', nextDate:'05 Abr', sem:'green',
+    contacts:[{name:'Elena Morales',role:'Compradora',phone:'+34 645 678 901',email:'elena@agrosantalucia.es',primary:true},{name:'Rafael Morales',role:'Director',phone:'+34 656 789 012',email:'rafael@agrosantalucia.es',primary:false}],
+    notes:'Cooperativa grande, 12 puntos de venta. Potencial alto. Referido por Veterinarios del Sur.',
+    timeline:[
+      {type:'call',text:'Segunda llamada. Elena confirma interés. Pide reunión con catálogo completo.',meta:'Hoy, 11:00 — Ignacio',icon:'&#9742;'},
+      {type:'note',text:'Notas: Tienen contrato con Acme expirando en mayo. Oportunidad de captar antes de renovación.',meta:'Ayer, 16:45 — Ignacio',icon:'&#9998;'},
+      {type:'call',text:'Primera llamada exploratoria. 15 min. Interesados en línea rural.',meta:'30 Mar, 10:20 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Lead creado manualmente (referido por Veterinarios del Sur)',meta:'29 Mar, 09:00 — Ignacio',icon:'&#9654;'}
+    ],
+    opps:[{name:'Suministro línea rural 12 puntos',value:'€12.300',phase:'Contacto realizado',color:'#6366F1'}]
+  },
+  { id:4, company:'PetShop Online BCN', contact:'Marc Soler', role:'CEO', phone:'+34 667 890 123', email:'marc@petshoponline.es', value:6800, days:3, phase:1, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'Organic', province:'Barcelona', nextAction:'Enviar propuesta por email', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Marc Soler',role:'CEO',phone:'+34 667 890 123',email:'marc@petshoponline.es',primary:true}],
+    notes:'E-commerce puro. 5000 pedidos/mes. Busca proveedor de snacks naturales.',
+    timeline:[
+      {type:'call',text:'Llamada de seguimiento. Marc pide propuesta formal con precios por volumen.',meta:'Ayer, 14:30 — Laura',icon:'&#9742;'},
+      {type:'phase',text:'Avanzado a "Contacto realizado"',meta:'01 Abr, 10:00 — Laura',icon:'&#9654;'},
+      {type:'phase',text:'Lead creado desde formulario web orgánico',meta:'31 Mar, 16:00 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Snacks naturales — proveedor',value:'€6.800',phase:'Contacto realizado',color:'#6366F1'}]
+  },
+  { id:5, company:'Amor de Gato - CatShop', contact:'Sofía Blanco', role:'Propietaria', phone:'+34 678 901 234', email:'sofia@amordegato.com', value:3400, days:7, phase:2, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'ADS', province:'Bilbao', nextAction:'Llamar para cerrar reunión', nextDate:'03 Abr', sem:'amber',
+    contacts:[{name:'Sofía Blanco',role:'Propietaria',phone:'+34 678 901 234',email:'sofia@amordegato.com',primary:true}],
+    notes:'Tienda especializada en gatos. Interés en juguetes y alimentación premium felina. Algo lenta en responder.',
+    timeline:[
+      {type:'note',text:'Sofía no respondió al último email. Intentar llamada directa mañana.',meta:'02 Abr, 17:00 — Ignacio',icon:'&#9998;'},
+      {type:'call',text:'Llamada sin respuesta. Dejado mensaje de voz.',meta:'01 Abr, 11:30 — Ignacio',icon:'&#9742;'},
+      {type:'call',text:'Llamada de seguimiento. Interesada pero pide tiempo para revisar catálogo.',meta:'28 Mar, 09:45 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Avanzado a "Seguimiento"',meta:'27 Mar, 15:00 — Ignacio',icon:'&#9654;'},
+      {type:'phase',text:'Lead creado desde campaña ADS Bilbao',meta:'25 Mar, 12:00 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Línea felina premium',value:'€3.400',phase:'Seguimiento',color:'#A855F7'}]
+  },
+  { id:6, company:'Luna Perruna', contact:'Pablo Navarro', role:'Director comercial', phone:'+34 689 012 345', email:'pablo@lunaperruna.es', value:15600, days:5, phase:2, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'Referral', province:'Málaga', nextAction:'Preparar catálogo personalizado', nextDate:'05 Abr', sem:'green',
+    contacts:[{name:'Pablo Navarro',role:'Director comercial',phone:'+34 689 012 345',email:'pablo@lunaperruna.es',primary:true},{name:'Marina Gil',role:'Responsable de compras',phone:'+34 690 123 456',email:'marina@lunaperruna.es',primary:false}],
+    notes:'Cadena 5 tiendas Málaga. Alto potencial. Requieren catálogo personalizado con precios especiales.',
+    timeline:[
+      {type:'meeting',text:'Videollamada con Pablo y Marina. Muy receptivos. Piden propuesta para 5 tiendas.',meta:'02 Abr, 10:00 — Laura',icon:'&#128197;'},
+      {type:'call',text:'Primera llamada con Pablo. Refiere a Marina para temas de compras.',meta:'30 Mar, 14:00 — Laura',icon:'&#9742;'},
+      {type:'phase',text:'Lead creado (referido por distribuidor Sur)',meta:'29 Mar, 11:00 — Laura',icon:'&#9654;'}
+    ],
+    opps:[{name:'Suministro 5 tiendas Málaga',value:'€15.600',phase:'Seguimiento',color:'#A855F7'}]
+  },
+  { id:7, company:'Lobitos&Co S.L.', contact:'Teresa Vega', role:'Gerente', phone:'+34 601 234 567', email:'teresa@lobitosco.es', value:22000, days:6, phase:3, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'Organic', province:'Zaragoza', nextAction:'Enviar propuesta formal', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Teresa Vega',role:'Gerente',phone:'+34 601 234 567',email:'teresa@lobitosco.es',primary:true}],
+    notes:'Distribuidora regional Aragón. 20+ clientes B2B. Si se cierra, abre todo el mercado aragonés.',
+    timeline:[
+      {type:'note',text:'Propuesta en preparación. Incluir descuento por volumen y condiciones de exclusividad regional.',meta:'Hoy, 08:30 — Ignacio',icon:'&#9998;'},
+      {type:'meeting',text:'Reunión presencial en Zaragoza. Teresa muy interesada en exclusividad regional.',meta:'01 Abr, 12:00 — Ignacio',icon:'&#128197;'},
+      {type:'call',text:'Llamada para concretar fecha de reunión presencial.',meta:'28 Mar, 16:00 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Avanzado a "Propuesta enviada"',meta:'28 Mar, 16:30 — Ignacio',icon:'&#9654;'}
+    ],
+    opps:[{name:'Distribución exclusiva Aragón',value:'€22.000',phase:'Propuesta enviada',color:'var(--blue)'}]
+  },
+  { id:8, company:'AnimalStar S.L.', contact:'Diego Fernández', role:'Dir. de operaciones', phone:'+34 612 345 000', email:'diego@animalstar.es', value:9800, days:4, phase:3, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'ADS', province:'Asturias', nextAction:'Responder dudas sobre logística', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Diego Fernández',role:'Dir. de operaciones',phone:'+34 612 345 000',email:'diego@animalstar.es',primary:true}],
+    notes:'Cadena 3 tiendas en Asturias. Interés en catálogo completo. Preguntas sobre logística de entrega.',
+    timeline:[
+      {type:'call',text:'Diego pregunta por plazos de entrega a Asturias y mínimos de pedido.',meta:'02 Abr, 15:30 — Laura',icon:'&#9742;'},
+      {type:'phase',text:'Catálogo enviado por email',meta:'01 Abr, 09:00 — Laura',icon:'&#9654;'}
+    ],
+    opps:[{name:'Catálogo completo 3 tiendas',value:'€9.800',phase:'Propuesta enviada',color:'var(--blue)'}]
+  },
+  { id:9, company:'La Caseta de los Animales', contact:'Lucía Hernández', role:'Propietaria', phone:'+34 623 456 000', email:'lucia@lacaseta.es', value:18500, days:12, phase:4, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'Referral', province:'Valencia', nextAction:'Cerrar condiciones de pago', nextDate:'03 Abr', sem:'amber',
+    contacts:[{name:'Lucía Hernández',role:'Propietaria',phone:'+34 623 456 000',email:'lucia@lacaseta.es',primary:true},{name:'David Roca',role:'Contable',phone:'+34 634 567 000',email:'david@lacaseta.es',primary:false}],
+    notes:'Negociación avanzada. Pide 60 días de pago. Nosotros ofrecemos 30. Intentar cerrar en 45 días como compromiso.',
+    timeline:[
+      {type:'call',text:'Lucía insiste en 60 días. Propongo 45 como punto medio. Lo consulta con David.',meta:'02 Abr, 11:00 — Ignacio',icon:'&#9742;'},
+      {type:'meeting',text:'Segunda reunión. Precios acordados. Queda pendiente plazo de pago.',meta:'28 Mar, 10:00 — Ignacio',icon:'&#128197;'},
+      {type:'meeting',text:'Primera reunión. Presentación catálogo. Muy buena recepción.',meta:'22 Mar, 14:00 — Ignacio',icon:'&#128197;'},
+      {type:'phase',text:'Avanzado a "Negociación"',meta:'22 Mar, 16:00 — Ignacio',icon:'&#9654;'}
+    ],
+    opps:[{name:'Contrato anual suministro',value:'€18.500',phase:'Negociación',color:'#E84393'}]
+  },
+  { id:10, company:'VetPartners Galicia', contact:'Ana Prieto', role:'Dir. de compras', phone:'+34 645 678 000', email:'ana@vetpartners.gal', value:14200, days:18, phase:4, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'Organic', province:'A Coruña', nextAction:'URGENTE: Responder contraoferta', nextDate:'02 Abr', sem:'red',
+    contacts:[{name:'Ana Prieto',role:'Dir. de compras',phone:'+34 645 678 000',email:'ana@vetpartners.gal',primary:true}],
+    notes:'ALERTA: Deal estancado 18 días en negociación. Ana envió contraoferta hace 3 días sin respuesta. Riesgo alto de perder.',
+    timeline:[
+      {type:'note',text:'ALERTA SISTEMA: Deal lleva 18 días en negociación (máx. esperado: 10 días)',meta:'Hoy, 07:00 — Sistema',icon:'&#9888;'},
+      {type:'note',text:'Ana envió contraoferta por email. Pendiente de revisar y responder.',meta:'31 Mar, 09:00 — Laura',icon:'&#9998;'},
+      {type:'meeting',text:'Reunión online. Buena negociación pero piden ajuste de precio del 8%.',meta:'20 Mar, 11:00 — Laura',icon:'&#128197;'},
+      {type:'phase',text:'Avanzado a "Negociación"',meta:'16 Mar, 14:00 — Laura',icon:'&#9654;'}
+    ],
+    opps:[{name:'Red veterinaria 8 clínicas',value:'€14.200',phase:'Negociación',color:'#E84393'}]
+  },
+  { id:11, company:'Example Veterinaria S.C.P.', contact:'Roberto Blázquez', role:'Socio fundador', phone:'+34 656 789 000', email:'roberto@exampleveterinaria.es', value:7600, days:0, phase:5, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'ADS', province:'Barcelona', nextAction:'Solicitar factura', nextDate:'03 Abr', sem:'green',
+    contacts:[{name:'Roberto Blázquez',role:'Socio fundador',phone:'+34 656 789 000',email:'roberto@exampleveterinaria.es',primary:true}],
+    notes:'¡GANADO! Contrato firmado el 02 de abril. Pendiente solicitar factura para activar pedido.',
+    timeline:[
+      {type:'phase',text:'Deal cerrado como GANADO. Contrato firmado.',meta:'02 Abr, 17:00 — Laura',icon:'&#10003;'},
+      {type:'meeting',text:'Firma del contrato en oficina del cliente.',meta:'02 Abr, 16:00 — Laura',icon:'&#128197;'}
+    ],
+    opps:[{name:'Primer pedido productos premium',value:'€7.600',phase:'Cerrado ganado',color:'var(--text-3)'}]
+  }
+];
+
+const phases = [
+  { name:'Nuevo', color:'var(--accent)', ids:[1,2] },
+  { name:'Contacto realizado', color:'#6366F1', ids:[3,4] },
+  { name:'Seguimiento', color:'#A855F7', ids:[5,6] },
+  { name:'Propuesta enviada', color:'#0984E3', ids:[7,8] },
+  { name:'Negociación', color:'#E84393', ids:[9,10] },
+  { name:'Cerrado', color:'var(--text-3)', ids:[11] }
+];
+
+function buildKanban(){
+  const kanban = document.getElementById('kanban');
+  kanban.innerHTML = '';
+  phases.forEach((phase,pi)=>{
+    const phaseLeads = phase.ids.map(id=>leads.find(l=>l.id===id));
+    const total = phaseLeads.reduce((s,l)=>s+l.value,0);
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `
+      <div class="column-head">
+        <span class="column-dot" style="background:${phase.color}"></span>
+        <span class="column-name">${phase.name}</span>
+        <span class="column-count">${phaseLeads.length}</span>
+        <span class="column-value">€${total.toLocaleString('es')}</span>
+      </div>
+      <div class="column-cards">
+        ${phaseLeads.map(l=>`
+          <div class="deal-card" onclick="openDetail(${l.id})">
+            <span class="semaphore sem-${l.sem}"></span>
+            <div class="company">${l.company}</div>
+            <div class="value">€${l.value.toLocaleString('es')}</div>
+            <div class="meta">
+              <div class="avatar" style="background:${l.sellerColor}">${l.sellerInit}</div>
+              <span>${l.days}d en fase</span>
+              <span class="meta-sep"></span>
+              <span class="tag ${l.source==='ADS'?'tag-ads':l.source==='Organic'?'tag-organic':'tag-referral'}">${l.source}</span>
+            </div>
+            <div class="next-action">&#10148; ${l.nextAction} · ${l.nextDate}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    kanban.appendChild(col);
+  });
+}
+
+function openDetail(id){
+  const l = leads.find(x=>x.id===id);
+  if(!l) return;
+  document.getElementById('dp-title').textContent = l.company;
+  document.getElementById('dp-subtitle').textContent = `${l.province} · ${l.source} · Vendedor: ${l.seller}`;
+  
+  const semLabel = l.sem==='green'?'En plazo':l.sem==='amber'?'Atención':'En riesgo';
+  const semClass = l.sem==='green'?'green':l.sem==='amber'?'amber':'red';
+  
+  document.getElementById('dp-content').innerHTML = `
+    <div class="dp-section">
+      <div class="dp-section-title">Información del deal</div>
+      <div class="dp-field"><span class="dp-field-label">Valor</span><span class="dp-field-value" style="color:var(--accent);font-size:18px">€${l.value.toLocaleString('es')}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Estado</span><span class="dp-field-value"><span class="tag" style="background:var(--${semClass}-bg);color:var(--${semClass}-text)">${semLabel} · ${l.days}d en fase</span></span></div>
+      <div class="dp-field"><span class="dp-field-label">Próxima acción</span><span class="dp-field-value">${l.nextAction}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Fecha</span><span class="dp-field-value">${l.nextDate}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Fuente</span><span class="dp-field-value"><span class="tag ${l.source==='ADS'?'tag-ads':l.source==='Organic'?'tag-organic':'tag-referral'}">${l.source}</span></span></div>
+      <div class="dp-field"><span class="dp-field-label">Provincia</span><span class="dp-field-value">${l.province}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Vendedor</span><span class="dp-field-value">${l.seller}</span></div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Contactos</div>
+      <div class="dp-contacts">
+        ${l.contacts.map(c=>`
+          <div class="dp-contact">
+            <div class="avatar" style="background:${COLORS[Math.floor(Math.random()*8)]};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:600">${c.name.split(' ').map(w=>w[0]).join('')}</div>
+            <div class="dp-contact-info">
+              <div class="dp-contact-name">${c.name} ${c.primary?'<span class="primary-badge">Principal</span>':''}</div>
+              <div class="dp-contact-role">${c.role}</div>
+              <div class="dp-contact-channels">${c.phone} · ${c.email}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Notas internas</div>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.6">${l.notes}</p>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Oportunidades vinculadas</div>
+      <div class="opp-list">
+        ${l.opps.map(o=>`
+          <div class="opp-item">
+            <span class="opp-dot" style="background:${o.color}"></span>
+            <span class="opp-name">${o.name}</span>
+            <span class="opp-value">${o.value}</span>
+            <span class="opp-phase">${o.phase}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Historial de actividad</div>
+      <div class="timeline">
+        ${l.timeline.map(t=>`
+          <div class="tl-item">
+            <div class="tl-line"></div>
+            <div class="tl-dot ${t.type}">${t.icon}</div>
+            <div class="tl-content">
+              <div class="tl-text">${t.text}</div>
+              <div class="tl-meta">${t.meta}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('pipe-overlay').classList.add('open');
+  document.getElementById('pipe-detail-panel').classList.add('open');
+}
+
+function closeDetail(){
+  document.getElementById('pipe-overlay').classList.remove('open');
+  document.getElementById('pipe-detail-panel').classList.remove('open');
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDetail(); });
+
+buildKanban();
+
+/* ===== DASHBOARD JS ===== */
+
+/* ---- CHART DEFAULTS ---- */
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
+function initDashboardCharts() {
+/* ---- SPARKLINES ---- */
+function sparkline(id, data, color, fill){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  new Chart(ctx, {
+    type:'line',
+    data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:color, backgroundColor:fill, borderWidth:2, pointRadius:0, tension:.4, fill:true }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}} }
+  });
+}
+
+sparkline('spark1',[68000,72000,81000,78000,85000,90000,88000,95000,92000,98000,105000,102000,108000,112000,118000,110000,115000,120000,118000,122000,119000,121000,124000,125000,123000,126000,125000,127000,127400,127400],'#0D7377','rgba(13,115,119,.08)');
+sparkline('spark2',[22,24,25,23,26,28,27,29,30,28,31,29,30,32,31,30,33,32,31,33,34,33,32,34,33,35,34,33,34,34],'#059669','rgba(5,150,105,.08)');
+sparkline('spark3',[2,3,4,2,5,3,4,6,3,4,5,2,3,4,5,3,4,6,3,5,4,3,5,4,3,4,5,3,4,3],'#2563EB','rgba(37,99,235,.08)');
+
+/* ---- HISTORICAL CHARTS ---- */
+const histMonths=['Nov','Dic','Ene','Feb','Mar','Abr'];
+const histOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#111827',titleFont:{size:11,family:'Inter'},bodyFont:{size:11,family:'Inter'},padding:8,cornerRadius:6}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#9CA3AF'}},y:{grid:{color:'#F0F1F3'},ticks:{font:{size:10},color:'#9CA3AF'}}}};
+new Chart(document.getElementById('hist-ventas'),{type:'bar',data:{labels:histMonths,datasets:[{data:[5200,7800,6400,9200,11000,7600],backgroundColor:['#CACDD5','#CACDD5','#CACDD5','#CACDD5','#CACDD5','#059669'],borderRadius:5,barThickness:28}]},options:{...histOpts,scales:{...histOpts.scales,y:{...histOpts.scales.y,ticks:{...histOpts.scales.y.ticks,callback:v=>'€'+v/1000+'k'}}},plugins:{...histOpts.plugins,tooltip:{...histOpts.plugins.tooltip,callbacks:{label:ctx=>'€'+ctx.raw.toLocaleString('es')}}}}});
+new Chart(document.getElementById('hist-leads'),{type:'line',data:{labels:histMonths,datasets:[{data:[9,11,12,14,16,18],borderColor:'#0D7377',backgroundColor:'rgba(13,115,119,.06)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#0D7377',tension:.3,fill:true}]},options:histOpts});
+new Chart(document.getElementById('hist-ciclo'),{type:'line',data:{labels:histMonths,datasets:[{data:[20,22,21,25,26,24],borderColor:'#D97706',backgroundColor:'rgba(217,119,6,.06)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#D97706',tension:.3,fill:true}]},options:{...histOpts,scales:{...histOpts.scales,y:{...histOpts.scales.y,ticks:{...histOpts.scales.y.ticks,callback:v=>v+'d'}}}}});
+new Chart(document.getElementById('hist-conversion'),{type:'line',data:{labels:histMonths,datasets:[{data:[24,26,28,30,33,34],borderColor:'#0D7377',backgroundColor:'rgba(13,115,119,.06)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#0D7377',tension:.3,fill:true},{data:[28,28,28,28,28,28],borderColor:'#CACDD5',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}]},options:{...histOpts,scales:{...histOpts.scales,y:{...histOpts.scales.y,ticks:{...histOpts.scales.y.ticks,callback:v=>v+'%'}}}}});
+} /* end initDashboardCharts */
+
+/* ---- DRILL-DOWN PANELS ---- */
+function openDrill(type){
+  const title = document.getElementById('drill-title');
+  const subtitle = document.getElementById('drill-subtitle');
+  const body = document.getElementById('drill-body');
+
+  if(type==='pipeline'){
+    title.textContent='Pipeline activo por fase';
+    subtitle.textContent='Desglose del valor total del pipeline · Abril 2026';
+    body.innerHTML=`
+      <div class="dp-section">
+        <div class="dp-section-title">Funnel por fase</div>
+        <div class="chart-box"><canvas id="chart-funnel" height="200"></canvas></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Desglose por vendedor</div>
+        <table class="data-table">
+          <thead><tr><th>Vendedor</th><th>Deals</th><th>Valor</th><th>% del pipeline</th></tr></thead>
+          <tbody>
+            <tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4338CA;margin-right:6px"></span>Ignacio</td><td>6</td><td class="val">€70.000</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:55%;background:#4338CA"></div></div><span class="bar-label">55%</span></div></td></tr>
+            <tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;margin-right:6px"></span>Laura</td><td>5</td><td class="val">€57.400</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:45%;background:#059669"></div></div><span class="bar-label">45%</span></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Objetivo mensual</div>
+        <div style="text-align:center;padding:16px">
+          <div style="font-size:13px;color:var(--text-2)">Progreso hacia objetivo de <b>€160.000</b></div>
+          <div style="margin:12px auto;max-width:400px">
+            <div class="bar-wrap">
+              <div class="bar-track" style="height:12px;border-radius:6px"><div class="bar-fill" style="width:79.6%;background:var(--amber);border-radius:6px"></div></div>
+              <span class="bar-label" style="font-size:16px;font-weight:700;color:var(--amber)">79,6%</span>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-3)">Faltan <b>€32.600</b> para alcanzar el objetivo</div>
+        </div>
+      </div>
+    `;
+    setTimeout(()=>{
+      new Chart(document.getElementById('chart-funnel'),{
+        type:'bar',
+        data:{
+          labels:['Nuevo','Contacto','Seguimiento','Propuesta','Negociación','Cerrado'],
+          datasets:[{data:[12700,19100,19000,31800,32700,7600],backgroundColor:['#0D7377','#059669','#D97706','#2563EB','#DB2777','#9CA3AF'],borderRadius:6,barThickness:32}]
+        },
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'€'+ctx.raw.toLocaleString('es')}}},scales:{x:{display:true,grid:{display:false},ticks:{callback:v=>'€'+v/1000+'k'}},y:{grid:{display:false}}}}
+      });
+    },100);
+
+  } else if(type==='conversion'){
+    title.textContent='Conversión por etapa del pipeline';
+    subtitle.textContent='% de deals que avanzan fase a fase · Abril 2026';
+    body.innerHTML=`
+      <div class="dp-section">
+        <div class="dp-section-title">Funnel de conversión</div>
+        <div class="chart-box"><canvas id="chart-conv" height="220"></canvas></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Detalle por transición</div>
+        <table class="data-table">
+          <thead><tr><th>Transición</th><th>Entran</th><th>Avanzan</th><th>Conversión</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Nuevo &#8594; Contacto</td><td>28</td><td>22</td><td><b>79%</b></td><td><span class="sem-dot sem-g"></span>OK</td></tr>
+            <tr><td>Contacto &#8594; Seguimiento</td><td>22</td><td>14</td><td><b>64%</b></td><td><span class="sem-dot sem-g"></span>OK</td></tr>
+            <tr><td>Seguimiento &#8594; Propuesta</td><td>14</td><td>8</td><td><b>57%</b></td><td><span class="sem-dot sem-a" style="background:var(--amber)"></span>Mejorable</td></tr>
+            <tr><td>Propuesta &#8594; Negociación</td><td>8</td><td>5</td><td><b>63%</b></td><td><span class="sem-dot sem-g"></span>OK</td></tr>
+            <tr><td>Negociación &#8594; Cerrado</td><td>5</td><td>3</td><td><b>60%</b></td><td><span class="sem-dot sem-g"></span>OK</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;padding:10px 12px;background:var(--amber-bg);border-radius:var(--radius-sm);font-size:12px;color:var(--amber-text)">
+          <b>&#9888; Punto débil detectado:</b> La transición de Seguimiento a Propuesta (57%) está por debajo de la media. Posible causa: los leads se enfrían durante el seguimiento por falta de propuesta ágil.
+        </div>
+      </div>
+    `;
+    setTimeout(()=>{
+      new Chart(document.getElementById('chart-conv'),{
+        type:'bar',
+        data:{
+          labels:['Nuevo','Contacto','Seguimiento','Propuesta','Negociación','Cerrado'],
+          datasets:[{data:[28,22,14,8,5,3],backgroundColor:['#0D7377','#059669','#D97706','#2563EB','#DB2777','#9CA3AF'],borderRadius:6,barThickness:36}]
+        },
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F0F1F3'},beginAtZero:true}}}
+      });
+    },100);
+
+  } else if(type==='activity'){
+    title.textContent='Actividad del equipo';
+    subtitle.textContent='Desglose por tipo y vendedor · Abril 2026';
+    body.innerHTML=`
+      <div class="dp-section">
+        <div class="dp-section-title">Resumen por tipo</div>
+        <div class="act-grid">
+          <div class="act-card"><div class="act-num" style="color:var(--green)">42</div><div class="act-label">Llamadas</div><div class="act-change change-up" style="display:inline-block;padding:2px 6px;border-radius:8px;background:var(--green-bg);color:var(--green-text)">&#9650; 18%</div></div>
+          <div class="act-card"><div class="act-num" style="color:var(--blue)">28</div><div class="act-label">Reuniones</div><div class="act-change change-up" style="display:inline-block;padding:2px 6px;border-radius:8px;background:var(--green-bg);color:var(--green-text)">&#9650; 40%</div></div>
+          <div class="act-card"><div class="act-num" style="color:var(--accent)">17</div><div class="act-label">Propuestas</div><div class="act-change change-up" style="display:inline-block;padding:2px 6px;border-radius:8px;background:var(--green-bg);color:var(--green-text)">&#9650; 13%</div></div>
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Actividad por vendedor</div>
+        <div class="chart-box"><canvas id="chart-activity" height="180"></canvas></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Evolución diaria (últimos 14 días)</div>
+        <div class="chart-box"><canvas id="chart-daily" height="160"></canvas></div>
+      </div>
+    `;
+    setTimeout(()=>{
+      new Chart(document.getElementById('chart-activity'),{
+        type:'bar',
+        data:{
+          labels:['Ignacio','Laura'],
+          datasets:[
+            {label:'Llamadas',data:[24,18],backgroundColor:'#059669',borderRadius:4,barThickness:24},
+            {label:'Reuniones',data:[16,12],backgroundColor:'#2563EB',borderRadius:4,barThickness:24},
+            {label:'Propuestas',data:[10,7],backgroundColor:'#0D7377',borderRadius:4,barThickness:24}
+          ]
+        },
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:16,font:{size:11}}}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F0F1F3'},beginAtZero:true}}}
+      });
+      new Chart(document.getElementById('chart-daily'),{
+        type:'line',
+        data:{
+          labels:['21M','22M','23M','24M','25M','26M','27M','28M','29M','30M','31M','1A','2A','3A'],
+          datasets:[
+            {label:'Ignacio',data:[4,3,5,6,4,3,5,7,4,6,5,4,6,5],borderColor:'#0D7377',backgroundColor:'rgba(13,115,119,.06)',borderWidth:2,pointRadius:3,tension:.3,fill:true},
+            {label:'Laura',data:[3,4,3,4,5,2,4,5,3,4,5,3,5,4],borderColor:'#059669',backgroundColor:'rgba(5,150,105,.06)',borderWidth:2,pointRadius:3,tension:.3,fill:true}
+          ]
+        },
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:16,font:{size:11}}}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F0F1F3'},beginAtZero:true}}}
+      });
+    },100);
+
+  } else if(type==='risk'){
+    title.textContent='Deals en riesgo';
+    subtitle.textContent='Oportunidades estancadas o con seguimiento vencido';
+    body.innerHTML=`
+      <div class="dp-section">
+        <div class="dp-section-title">Deals con alerta activa</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="padding:14px;border:1px solid var(--red);border-radius:var(--radius);background:var(--red-bg)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="kpi-sem sem-r" style="width:8px;height:8px"></span>
+              <span style="font-weight:600;font-size:14px;color:var(--red-text)">VetPartners Galicia</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--red-text)">€14.200</span>
+            </div>
+            <div style="font-size:12px;color:var(--red-text);line-height:1.6">
+              <b>18 días</b> en fase de Negociación (máx. esperado: 10 días)<br>
+              Contraoferta del cliente sin respuesta desde hace 3 días<br>
+              <b>Vendedora:</b> Laura · <b>Última actividad:</b> 31 Mar
+            </div>
+            <div style="margin-top:8px;display:flex;gap:6px">
+              <button style="font-family:var(--font);font-size:11px;padding:5px 10px;border:1px solid var(--red);border-radius:4px;background:white;color:var(--red-text);cursor:pointer;font-weight:500">Ver ficha</button>
+              <button style="font-family:var(--font);font-size:11px;padding:5px 10px;border:none;border-radius:4px;background:var(--red);color:white;cursor:pointer;font-weight:500">Notificar a Laura</button>
+            </div>
+          </div>
+          <div style="padding:14px;border:1px solid var(--amber);border-radius:var(--radius);background:var(--amber-bg)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--amber)"></span>
+              <span style="font-weight:600;font-size:14px;color:var(--amber-text)">La Caseta de los Animales</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber-text)">€18.500</span>
+            </div>
+            <div style="font-size:12px;color:var(--amber-text);line-height:1.6">
+              <b>12 días</b> en fase de Negociación (máx. esperado: 10 días)<br>
+              Condiciones de pago pendientes de cerrar<br>
+              <b>Vendedor:</b> Ignacio · <b>Última actividad:</b> 02 Abr
+            </div>
+          </div>
+          <div style="padding:14px;border:1px solid var(--amber);border-radius:var(--radius);background:var(--amber-bg)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--amber)"></span>
+              <span style="font-weight:600;font-size:14px;color:var(--amber-text)">Amor de Gato - CatShop</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber-text)">€3.400</span>
+            </div>
+            <div style="font-size:12px;color:var(--amber-text);line-height:1.6">
+              <b>7 días</b> en Seguimiento sin respuesta del cliente<br>
+              2 llamadas sin contestar + 1 email sin respuesta<br>
+              <b>Vendedor:</b> Ignacio · <b>Última actividad:</b> 02 Abr
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Valor en riesgo</div>
+        <div style="text-align:center;padding:16px;background:var(--surface-alt);border-radius:var(--radius)">
+          <div style="font-size:34px;font-weight:700;color:var(--red);letter-spacing:-1px">€36.100</div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:4px">28,3% del pipeline total está en zona de riesgo</div>
+        </div>
+      </div>
+    `;
+
+  } else if(type==='top5'){
+    title.textContent='Pipeline por valor';
+    subtitle.textContent='Todas las oportunidades activas ordenadas por valor';
+    body.innerHTML=`
+      <div class="dp-section">
+        <div class="dp-section-title">Ranking completo</div>
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Empresa</th><th>Valor</th><th>Fase</th><th>Vendedor</th><th>Días</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><b>Lobitos&Co S.L.</b></td><td class="val">€22.000</td><td>Propuesta</td><td>Ignacio</td><td>6</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>2</td><td><b>La Caseta de los Animales</b></td><td class="val">€18.500</td><td>Negociación</td><td>Ignacio</td><td>12</td><td><span class="sem-dot sem-a" style="background:var(--amber)"></span></td></tr>
+            <tr><td>3</td><td><b>Luna Perruna</b></td><td class="val">€15.600</td><td>Seguimiento</td><td>Laura</td><td>5</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>4</td><td><b>VetPartners Galicia</b></td><td class="val">€14.200</td><td>Negociación</td><td>Laura</td><td>18</td><td><span class="sem-dot sem-r"></span></td></tr>
+            <tr><td>5</td><td><b>Agropecuario Santa Lucía</b></td><td class="val">€12.300</td><td>Contacto</td><td>Ignacio</td><td>4</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>6</td><td><b>AnimalStar S.L.</b></td><td class="val">€9.800</td><td>Propuesta</td><td>Laura</td><td>4</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>7</td><td><b>Clínica Animalia</b></td><td class="val">€8.500</td><td>Nuevo</td><td>Ignacio</td><td>2</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>8</td><td><b>Example Veterinaria</b></td><td class="val">€7.600</td><td>Cerrado &#10003;</td><td>Laura</td><td>0</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>9</td><td><b>PetShop Online BCN</b></td><td class="val">€6.800</td><td>Contacto</td><td>Laura</td><td>3</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>10</td><td><b>MimoPets</b></td><td class="val">€4.200</td><td>Nuevo</td><td>Laura</td><td>1</td><td><span class="sem-dot sem-g"></span></td></tr>
+            <tr><td>11</td><td><b>Amor de Gato</b></td><td class="val">€3.400</td><td>Seguimiento</td><td>Ignacio</td><td>7</td><td><span class="sem-dot sem-a" style="background:var(--amber)"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Distribución por fase</div>
+        <div class="chart-box"><canvas id="chart-dist" height="200"></canvas></div>
+      </div>
+    `;
+    setTimeout(()=>{
+      new Chart(document.getElementById('chart-dist'),{
+        type:'doughnut',
+        data:{
+          labels:['Nuevo','Contacto','Seguimiento','Propuesta','Negociación','Cerrado'],
+          datasets:[{data:[12700,19100,19000,31800,32700,7600],backgroundColor:['#0D7377','#059669','#D97706','#2563EB','#DB2777','#9CA3AF'],borderWidth:2,borderColor:'#FFF'}]
+        },
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12,font:{size:11}}},tooltip:{callbacks:{label:ctx=>' €'+ctx.raw.toLocaleString('es')+' ('+Math.round(ctx.raw/142700*100)+'%)'}}}}
+      });
+    },100);
+  }
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('drill-panel').classList.add('open');
+}
+
+function closeDrill(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('drill-panel').classList.remove('open');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrill()});
+
+
+/* ===== BASE DE DATOS JS ===== */
+
+const C=['#0D7377','#00B894','#E17055','#0984E3','#FDCB6E','#E84393'];
+const empresas=[
+  {name:'Lobitos&Co S.L.',lifecycle:'negotiation',contact:'Teresa Vega',phone:'+34 601 234 567',email:'teresa@lobitosco.es',seller:'Ignacio',sellerI:'IM',sellerC:C[0],valueH:0,deals:1,lastAct:'Hoy',lastActD:0,source:'Organic',province:'Zaragoza',lbl:'En negociación'},
+  {name:'La Caseta de los Animales',lifecycle:'negotiation',contact:'Lucía Hernández',phone:'+34 623 456 000',email:'lucia@lacaseta.es',seller:'Ignacio',sellerI:'IM',sellerC:C[0],valueH:0,deals:1,lastAct:'Ayer',lastActD:1,source:'Referral',province:'Valencia',lbl:'En negociación'},
+  {name:'Luna Perruna',lifecycle:'contacted',contact:'Pablo Navarro',phone:'+34 689 012 345',email:'pablo@lunaperruna.es',seller:'Laura',sellerI:'LR',sellerC:C[1],valueH:0,deals:1,lastAct:'Ayer',lastActD:1,source:'Referral',province:'Málaga',lbl:'Contactado'},
+  {name:'Agropecuario Santa Lucía',lifecycle:'contacted',contact:'Elena Morales',phone:'+34 645 678 901',email:'elena@agrosantalucia.es',seller:'Ignacio',sellerI:'IM',sellerC:C[0],valueH:0,deals:1,lastAct:'Hoy',lastActD:0,source:'Referral',province:'Sevilla',lbl:'Contactado'},
+  {name:'Clínica Animalia',lifecycle:'lead',contact:'Carmen Ruiz',phone:'+34 612 345 678',email:'carmen@animalia.es',seller:'Ignacio',sellerI:'IM',sellerC:C[0],valueH:0,deals:1,lastAct:'Hoy',lastActD:0,source:'ADS',province:'Madrid',lbl:'Lead'},
+  {name:'AnimalStar S.L.',lifecycle:'contacted',contact:'Diego Fernández',phone:'+34 612 345 000',email:'diego@animalstar.es',seller:'Laura',sellerI:'LR',sellerC:C[1],valueH:0,deals:1,lastAct:'Ayer',lastActD:1,source:'ADS',province:'Asturias',lbl:'Contactado'},
+  {name:'PetShop Online BCN',lifecycle:'contacted',contact:'Marc Soler',phone:'+34 667 890 123',email:'marc@petshoponline.es',seller:'Laura',sellerI:'LR',sellerC:C[1],valueH:0,deals:1,lastAct:'Ayer',lastActD:1,source:'Organic',province:'Barcelona',lbl:'Contactado'},
+  {name:'Example Veterinaria S.C.P.',lifecycle:'client',contact:'Roberto Blázquez',phone:'+34 656 789 000',email:'roberto@exampleveterinaria.es',seller:'Laura',sellerI:'LR',sellerC:C[1],valueH:7600,deals:0,lastAct:'Ayer',lastActD:1,source:'ADS',province:'Barcelona',lbl:'Cliente'},
+  {name:'MimoPets',lifecycle:'lead',contact:'Jaime Torres',phone:'+34 634 567 890',email:'jaime@mimopets.com',seller:'Laura',sellerI:'LR',sellerC:C[1],valueH:0,deals:1,lastAct:'Hoy',lastActD:0,source:'ADS',province:'Valencia',lbl:'Lead'},
+  {name:'VetPartners Galicia',lifecycle:'negotiation',contact:'Ana Prieto',phone:'+34 645 678 000',email:'ana@vetpartners.gal',seller:'Laura',sellerI:'LR',sellerC:C[1],valueH:0,deals:1,lastAct:'Hace 3 días',lastActD:3,source:'Organic',province:'A Coruña',lbl:'En negociación'},
+  {name:'Amor de Gato - CatShop',lifecycle:'contacted',contact:'Sofía Blanco',phone:'+34 678 901 234',email:'sofia@amordegato.com',seller:'Ignacio',sellerI:'IM',sellerC:C[0],valueH:0,deals:1,lastAct:'Hace 7 días',lastActD:7,source:'ADS',province:'Bilbao',lbl:'Contactado'}
+];
+const dealValues={0:22000,1:18500,2:15600,3:12300,4:8500,5:9800,6:6800,7:7600,8:4200,9:14200,10:3400};
+
+const contactos=[
+  {name:'Teresa Vega',company:'Lobitos&Co S.L.',role:'Gerente',phone:'+34 601 234 567',email:'teresa@lobitosco.es',primary:true,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Hoy',lastActD:0,lifecycle:'negotiation',lbl:'En negociación'},
+  {name:'Lucía Hernández',company:'La Caseta de los Animales',role:'Propietaria',phone:'+34 623 456 000',email:'lucia@lacaseta.es',primary:true,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Ayer',lastActD:1,lifecycle:'negotiation',lbl:'En negociación'},
+  {name:'David Roca',company:'La Caseta de los Animales',role:'Contable',phone:'+34 634 567 000',email:'david@lacaseta.es',primary:false,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Hace 5 días',lastActD:5,lifecycle:'negotiation',lbl:'En negociación'},
+  {name:'Pablo Navarro',company:'Luna Perruna',role:'Director comercial',phone:'+34 689 012 345',email:'pablo@lunaperruna.es',primary:true,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Ayer',lastActD:1,lifecycle:'contacted',lbl:'Contactado'},
+  {name:'Marina Gil',company:'Luna Perruna',role:'Resp. de compras',phone:'+34 690 123 456',email:'marina@lunaperruna.es',primary:false,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Ayer',lastActD:1,lifecycle:'contacted',lbl:'Contactado'},
+  {name:'Elena Morales',company:'Agropecuario Santa Lucía',role:'Compradora',phone:'+34 645 678 901',email:'elena@agrosantalucia.es',primary:true,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Hoy',lastActD:0,lifecycle:'contacted',lbl:'Contactado'},
+  {name:'Rafael Morales',company:'Agropecuario Santa Lucía',role:'Director',phone:'+34 656 789 012',email:'rafael@agrosantalucia.es',primary:false,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Hace 4 días',lastActD:4,lifecycle:'contacted',lbl:'Contactado'},
+  {name:'Carmen Ruiz',company:'Clínica Animalia',role:'Directora',phone:'+34 612 345 678',email:'carmen@animalia.es',primary:true,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Hoy',lastActD:0,lifecycle:'lead',lbl:'Lead'},
+  {name:'Andrés López',company:'Clínica Animalia',role:'Veterinario jefe',phone:'+34 623 456 789',email:'andres@animalia.es',primary:false,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Nunca',lastActD:99,lifecycle:'lead',lbl:'Lead'},
+  {name:'Diego Fernández',company:'AnimalStar S.L.',role:'Dir. de operaciones',phone:'+34 612 345 000',email:'diego@animalstar.es',primary:true,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Ayer',lastActD:1,lifecycle:'contacted',lbl:'Contactado'},
+  {name:'Marc Soler',company:'PetShop Online BCN',role:'CEO',phone:'+34 667 890 123',email:'marc@petshoponline.es',primary:true,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Ayer',lastActD:1,lifecycle:'contacted',lbl:'Contactado'},
+  {name:'Roberto Blázquez',company:'Example Veterinaria S.C.P.',role:'Socio fundador',phone:'+34 656 789 000',email:'roberto@exampleveterinaria.es',primary:true,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Ayer',lastActD:1,lifecycle:'client',lbl:'Cliente'},
+  {name:'Jaime Torres',company:'MimoPets',role:'Gerente',phone:'+34 634 567 890',email:'jaime@mimopets.com',primary:true,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Hoy',lastActD:0,lifecycle:'lead',lbl:'Lead'},
+  {name:'Ana Prieto',company:'VetPartners Galicia',role:'Dir. de compras',phone:'+34 645 678 000',email:'ana@vetpartners.gal',primary:true,seller:'Laura',sellerI:'LR',sellerC:C[1],lastAct:'Hace 3 días',lastActD:3,lifecycle:'negotiation',lbl:'En negociación'},
+  {name:'Sofía Blanco',company:'Amor de Gato - CatShop',role:'Propietaria',phone:'+34 678 901 234',email:'sofia@amordegato.com',primary:true,seller:'Ignacio',sellerI:'IM',sellerC:C[0],lastAct:'Hace 7 días',lastActD:7,lifecycle:'contacted',lbl:'Contactado'}
+];
+
+const lcClass={lead:'b-lead',contacted:'b-contacted',negotiation:'b-negotiation',client:'b-client',lost:'b-lost'};
+const srcClass={ADS:'s-ads',Organic:'s-organic',Referral:'s-referral',BBDD:'s-bbdd'};
+let currentTab='empresas';
+let bdView='all';
+
+function renderEmpresas(data){
+  const tbody=document.getElementById('tbody-empresas');
+  tbody.innerHTML=data.map((e,i)=>{
+    const dv=dealValues[empresas.indexOf(e)]||0;
+    const totalV=e.valueH+dv;
+    const stale=e.lastActD>=7?'stale':'';
+    return `<tr>
+      <td><input type="checkbox" class="checkbox row-check" onchange="updateBulk()"></td>
+      <td><span class="link" onclick="alert('Abrir ficha /empresa/${e.name}')">${e.name}</span></td>
+      <td><span class="badge ${lcClass[e.lifecycle]}">${e.lbl}</span></td>
+      <td>${e.contact}</td>
+      <td><a class="phone" href="tel:${e.phone}">${e.phone}</a></td>
+      <td><span class="avatar-sm" style="background:${e.sellerC}">${e.sellerI}</span>${e.seller}</td>
+      <td class="val">${totalV>0?'€'+totalV.toLocaleString('es'):'—'}</td>
+      <td>${e.deals>0?e.deals:'—'}</td>
+      <td><span class="relative-date ${stale}">${e.lastAct}</span></td>
+      <td><span class="source-tag ${srcClass[e.source]}">${e.source}</span></td>
+      <td>${e.province}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('status-text').textContent=`Mostrando ${data.length} empresas`;
+  document.getElementById('count-empresas').textContent=data.length;
+}
+
+function renderContactos(data){
+  const tbody=document.getElementById('tbody-contactos');
+  tbody.innerHTML=data.map(c=>{
+    const stale=c.lastActD>=7?'stale':'';
+    return `<tr>
+      <td><input type="checkbox" class="checkbox row-check" onchange="updateBulk()"></td>
+      <td><b>${c.name}</b></td>
+      <td><span class="link" onclick="alert('Abrir ficha /empresa/${c.company}')">${c.company}</span></td>
+      <td>${c.role}</td>
+      <td><a class="phone" href="tel:${c.phone}">${c.phone}</a></td>
+      <td><a class="phone" href="mailto:${c.email}" style="font-size:12px">${c.email}</a></td>
+      <td>${c.primary?'<span class="badge b-primary">Principal</span>':''}</td>
+      <td><span class="avatar-sm" style="background:${c.sellerC}">${c.sellerI}</span>${c.seller}</td>
+      <td><span class="relative-date ${stale}">${c.lastAct}</span></td>
+      <td><span class="badge ${lcClass[c.lifecycle]}">${c.lbl}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('status-text').textContent=`Mostrando ${data.length} contactos`;
+  document.getElementById('count-contactos').textContent=data.length;
+}
+
+function showTab(tab){
+  currentTab=tab;
+  document.getElementById('tab-empresas').classList.toggle('active',tab==='empresas');
+  document.getElementById('tab-contactos').classList.toggle('active',tab==='contactos');
+  document.getElementById('table-empresas').style.display=tab==='empresas'?'':'none';
+  document.getElementById('table-contactos').style.display=tab==='contactos'?'':'none';
+  document.getElementById('views-empresas').style.display=tab==='empresas'?'flex':'none';
+  document.getElementById('views-contactos').style.display=tab==='contactos'?'flex':'none';
+  document.getElementById('search').value='';
+  bdView='all';
+  if(tab==='empresas') renderEmpresas(empresas);
+  else renderContactos(contactos);
+  clearSelection();
+}
+
+function filterTable(){
+  const q=document.getElementById('search').value.toLowerCase();
+  if(currentTab==='empresas'){
+    const f=empresas.filter(e=>e.name.toLowerCase().includes(q)||e.contact.toLowerCase().includes(q)||e.phone.includes(q)||e.email.toLowerCase().includes(q)||e.province.toLowerCase().includes(q));
+    renderEmpresas(f);
+  } else {
+    const f=contactos.filter(c=>c.name.toLowerCase().includes(q)||c.company.toLowerCase().includes(q)||c.phone.includes(q)||c.email.toLowerCase().includes(q)||c.role.toLowerCase().includes(q));
+    renderContactos(f);
+  }
+}
+
+function applyView(view,el){
+  bdView=view;
+  const parent=el.parentElement;
+  parent.querySelectorAll('.view-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('search').value='';
+  if(currentTab==='empresas'){
+    let f=empresas;
+    if(view==='mis') f=empresas.filter(e=>e.seller==='Ignacio');
+    else if(view==='clientes') f=empresas.filter(e=>e.lifecycle==='client');
+    else if(view==='frios') f=empresas.filter(e=>e.lifecycle==='lead'&&e.lastActD>7||e.lastActD>7);
+    else if(view==='ex') f=empresas.filter(e=>e.lifecycle==='lost');
+    renderEmpresas(f);
+  } else {
+    let f=contactos;
+    if(view==='mis-c') f=contactos.filter(c=>c.seller==='Ignacio');
+    else if(view==='decisores') f=contactos.filter(c=>/director|gerente|ceo|propietari|fundador/i.test(c.role));
+    else if(view==='principales') f=contactos.filter(c=>c.primary);
+    renderContactos(f);
+  }
+}
+
+function toggleAll(cb,tab){
+  document.querySelectorAll(`#table-${tab} .row-check`).forEach(c=>c.checked=cb.checked);
+  updateBulk();
+}
+function updateBulk(){
+  const checked=document.querySelectorAll('.row-check:checked').length;
+  document.getElementById('bulk-bar').classList.toggle('visible',checked>0);
+  document.getElementById('bulk-count').textContent=checked;
+}
+function clearSelection(){
+  document.querySelectorAll('.row-check').forEach(c=>c.checked=false);
+  document.querySelectorAll('thead .checkbox').forEach(c=>c.checked=false);
+  document.getElementById('bulk-bar').classList.remove('visible');
+}
+
+function sortTable(tab,col){
+  alert('Ordenar por columna '+(col+1)+' — en desarrollo completo se ordena la tabla en tiempo real');
+}
+
+renderEmpresas(empresas);
+
+/* ===== INIT ===== */
+showView('pipeline');
+</script>
+</body>
+</html>

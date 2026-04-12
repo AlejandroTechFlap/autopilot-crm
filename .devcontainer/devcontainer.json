@@ -1,0 +1,8 @@
+{
+  "name": "Autopilot CRM",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20-bookworm",
+  "postCreateCommand": "corepack enable && pnpm install",
+  "postStartCommand": "npm install -g @anthropic-ai/claude-code@latest",
+  "containerEnv": { "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}" },
+  "remoteEnv": { "ANTHROPIC_API_KEY": "${containerEnv:ANTHROPIC_API_KEY}" }
+}

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autopilot CRM — Vendedor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F7;--surface:#FFFFFF;--surface-alt:#F0F1F3;
+  --border:#E2E4E9;--border-hover:#CACDD5;
+  --text-1:#111827;--text-2:#4B5563;--text-3:#9CA3AF;
+  --accent:#0D7377;--accent-hover:#0A5C5F;--accent-light:#F0FDFA;
+  --green:#059669;--green-bg:#ECFDF5;--green-text:#065F46;
+  --amber:#D97706;--amber-bg:#FFFBEB;--amber-text:#92400E;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-text:#991B1B;
+  --blue:#2563EB;--blue-bg:#DBEAFE;
+  --radius:8px;--radius-sm:6px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.12)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text-1);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
+.view{display:none}.view.active{display:block}
+
+
+.topbar{display:flex;align-items:center;gap:16px;padding:0 28px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.topbar-logo{font-weight:700;font-size:17px;color:var(--accent);letter-spacing:-.4px;display:flex;align-items:baseline;gap:6px}
+.topbar-logo span{color:var(--text-3);font-weight:400;font-size:12px;text-transform:uppercase;letter-spacing:1.5px}
+.topbar-nav{display:flex;align-items:center;gap:2px;margin-left:36px}
+.topbar-nav button{font-family:var(--font);font-size:13px;font-weight:500;padding:7px 14px;border:none;background:none;color:var(--text-2);cursor:pointer;border-radius:var(--radius-sm);transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.topbar-nav button:hover{background:var(--accent-light);color:var(--accent);transform:scale(1.12)}
+.topbar-nav button.active{background:var(--accent);color:#fff;font-weight:600}
+.topbar-nav button.active:hover{transform:scale(1.08);background:var(--accent-hover)}
+.topbar-nav button:hover + button,.topbar-nav button:has(+ button:hover){transform:scale(1.04)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar-user{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;letter-spacing:.3px;transition:transform .2s;cursor:pointer}
+.topbar-user:hover{transform:scale(1.1)}
+.topbar-notif{position:relative;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+.topbar-notif .notif-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+/* ===== PIPELINE ===== */
+
+
+
+
+
+/* --- NAV --- */
+
+/* --- PIPELINE HEADER --- */
+.pipeline-header { padding: 20px 24px 12px; display: flex; align-items: center; justify-content: space-between; }
+.pipeline-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+.pipeline-stats { display: flex; gap: 16px; }
+.stat-chip { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; background: var(--surface); border: 1px solid var(--border); }
+.stat-chip b { color: var(--text-1); font-weight: 700; }
+.pipeline-filters { display: flex; gap: 8px; padding: 0 24px 16px; }
+.filter-btn { font-family: var(--font); font-size: 12px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); color: var(--text-2); cursor: pointer; transition: all .25s cubic-bezier(.4,0,.2,1); transform-origin: center bottom; }
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+/* --- KANBAN --- */
+.kanban { display: flex; gap: 12px; padding: 0 24px 24px; overflow-x: auto; min-height: calc(100vh - 180px); }
+.column { min-width: 260px; max-width: 280px; flex: 1; display: flex; flex-direction: column; }
+.column-head { padding: 10px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.column-dot { width: 8px; height: 8px; border-radius: 50%; }
+.column-name { font-size: 13px; font-weight: 500; flex: 1; }
+.column-count { font-size: 11px; color: var(--text-3); background: var(--surface-alt); padding: 2px 7px; border-radius: 10px; }
+.column-value { font-size: 11px; font-weight: 600; color: var(--text-1); }
+.column-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+/* --- DEAL CARD --- */
+.deal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; cursor: pointer; transition: all .2s; position: relative; }
+.deal-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.deal-card .company { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.deal-card .value { font-size: 18px; font-weight: 700; color: var(--text-1); letter-spacing: -0.5px; }
+.deal-card .meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--text-3); }
+.deal-card .meta-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+.deal-card .next-action { margin-top: 8px; font-size: 11px; color: var(--text-2); padding: 4px 8px; background: var(--surface-alt); border-radius: var(--radius-sm); display: inline-block; }
+.deal-card .semaphore { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.sem-green { background: var(--green); box-shadow: 0 0 0 3px var(--green-bg); }
+.sem-green::after { content: "✓"; font-size: 8px; color: #fff; font-weight: 700; }
+.sem-amber { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-bg); }
+.sem-amber::after { content: "!"; font-size: 9px; color: #fff; font-weight: 700; }
+.sem-red { background: var(--red); box-shadow: 0 0 0 3px var(--red-bg); animation: pulse-r 2s infinite; }
+.sem-red::after { content: "✕"; font-size: 7px; color: #fff; font-weight: 700; }
+@keyframes pulse-r { 0%,100%{box-shadow: 0 0 0 3px var(--red-bg)} 50%{box-shadow: 0 0 0 5px rgba(220,38,38,.15)} }
+.deal-card .avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: white; }
+.tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+.tag-ads { background: var(--blue-bg); color: var(--blue); }
+.tag-organic { background: var(--green-bg); color: var(--green-text); }
+.tag-referral { background: var(--amber-bg); color: var(--amber-text); }
+
+/* --- DETAIL PANEL (M2) --- */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 200; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.overlay.open { opacity: 1; pointer-events: all; }
+.detail-panel { position: fixed; top: 0; right: -580px; width: 560px; max-width: 90vw; height: 100%; background: var(--surface); z-index: 210; overflow-y: auto; transition: right .3s cubic-bezier(.4,0,.2,1); box-shadow: var(--shadow-lg); }
+.detail-panel.open { right: 0; }
+.dp-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; position: sticky; top: 0; background: var(--surface); z-index: 5; }
+.dp-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-2); transition: all .15s; flex-shrink: 0; }
+.dp-close:hover { background: var(--surface-alt); }
+.dp-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.dp-subtitle { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.dp-section { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.dp-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-3); margin-bottom: 12px; }
+.dp-field { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; }
+.dp-field-label { color: var(--text-2); }
+.dp-field-value { font-weight: 500; text-align: right; max-width: 60%; }
+.dp-field-value a { color: var(--accent); text-decoration: none; }
+.dp-contacts { display: flex; flex-direction: column; gap: 8px; }
+.dp-contact { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-alt); }
+.dp-contact .avatar { flex-shrink: 0; }
+.dp-contact-info { flex: 1; }
+.dp-contact-name { font-size: 13px; font-weight: 500; }
+.dp-contact-role { font-size: 11px; color: var(--text-3); }
+.dp-contact-channels { font-size: 11px; color: var(--text-2); }
+.dp-contact .primary-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+/* --- TIMELINE --- */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+.tl-line { position: absolute; left: 15px; top: 34px; bottom: -10px; width: 1px; background: var(--border); }
+.tl-item:last-child .tl-line { display: none; }
+.tl-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; z-index: 1; }
+.tl-dot.call { border-color: var(--green); color: var(--green); }
+.tl-dot.note { border-color: var(--amber); color: var(--amber); }
+.tl-dot.phase { border-color: var(--accent); color: var(--accent); }
+.tl-dot.meeting { border-color: var(--blue); color: var(--blue); }
+.tl-content { flex: 1; }
+.tl-text { font-size: 13px; }
+.tl-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* --- ACTION BUTTONS --- */
+.action-bar { display: flex; gap: 6px; padding: 16px 24px; position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); }
+.action-btn { font-family: var(--font); font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text-1); cursor: pointer; transition: all .15s; flex: 1; text-align: center; }
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.action-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.action-btn.primary:hover { background: #0A5C5F; }
+
+/* --- OPPORTUNITIES --- */
+.opp-list { display: flex; flex-direction: column; gap: 6px; }
+.opp-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-alt); font-size: 12px; }
+.opp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.opp-name { flex: 1; font-weight: 500; }
+.opp-value { font-weight: 700; color: var(--text-1); }
+.opp-phase { color: var(--text-3); }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .kanban { padding: 0 12px 12px; gap: 8px; }
+  .column { min-width: 220px; }
+  .detail-panel { width: 100%; }
+}
+
+/* ===== COCKPIT ===== */
+
+
+
+
+
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:1fr 340px;gap:0;min-height:calc(100vh - 56px)}
+@media(max-width:900px){.main{grid-template-columns:1fr}.sidebar{border-left:none;border-top:1px solid var(--border)}}
+
+/* LEFT: TASK INBOX */
+.inbox{padding:20px 24px;overflow-y:auto}
+.inbox-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.inbox-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.inbox-subtitle{font-size:13px;color:var(--text-3)}
+.inbox-filters{display:flex;gap:6px;margin-bottom:16px}
+.inbox-filters button{font-family:var(--font);font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.inbox-filters button.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.inbox-filters button:hover{border-color:var(--accent)}
+
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;padding:8px 0 6px;display:flex;align-items:center;gap:8px}
+.section-label .dot{width:8px;height:8px;border-radius:50%}
+.section-label .count{font-weight:500;color:var(--text-3);font-size:10px;background:var(--surface-alt);padding:1px 6px;border-radius:8px}
+
+.task{display:flex;gap:12px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:var(--surface);cursor:pointer;transition:all .2s;position:relative}
+.task:hover{border-color:var(--border-hover);box-shadow:var(--shadow-md)}
+.task.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-light)}
+.task-priority{width:4px;border-radius:2px;flex-shrink:0}
+.pri-red{background:var(--red)}
+.pri-amber{background:var(--amber)}
+.pri-green{background:var(--green)}
+.task-
+.task-company{font-size:14px;font-weight:500}
+.task-action{font-size:13px;color:var(--text-2);margin-top:2px}
+.task-meta{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--text-3);flex-wrap:wrap}
+.task-tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.tag-auto{background:var(--amber-bg);color:var(--amber-text)}
+.tag-manual{background:var(--surface-alt);color:var(--text-3)}
+.task-due{font-weight:500}
+.due-overdue{color:var(--red-text)}
+.due-today{color:var(--amber-text)}
+.due-future{color:var(--text-3)}
+.task-actions{display:flex;gap:4px;margin-top:8px}
+.task-btn{font-family:var(--font);font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .12s}
+.task-btn:hover{border-color:var(--accent);color:var(--accent)}
+.task-btn.done{background:var(--green);border-color:var(--green);color:#fff}
+.task-btn.done:hover{background:#219653}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+
+/* MINI DASHBOARD */
+.mini-dash{padding:16px;border-bottom:1px solid var(--border)}
+.mini-dash-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:10px}
+.kpi-row{display:flex;gap:8px;margin-bottom:8px}
+.kpi-mini{flex:1;padding:10px;border-radius:var(--radius-sm);background:var(--surface-alt);text-align:center}
+.kpi-mini-value{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.kpi-mini-label{font-size:10px;color:var(--text-2);margin-top:2px}
+.kpi-mini-change{font-size:10px;font-weight:500;margin-top:2px}
+
+/* COMMISSION */
+.commission-box{padding:16px;border-bottom:1px solid var(--border)}
+.comm-total{display:flex;align-items:center;justify-content:space-between;padding:12px;background:linear-gradient(135deg,#0D7377 0%,#14919B 100%);border-radius:var(--radius);color:#fff;margin-bottom:8px}
+.comm-total-label{font-size:12px;opacity:.85}
+.comm-total-value{font-size:24px;font-weight:700}
+.comm-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--surface-alt)}
+.comm-item:last-child{border:none}
+.comm-company{color:var(--text-2)}
+.comm-amount{font-weight:600;color:var(--green-text)}
+
+/* LEAD CARD */
+.lead-card{padding:16px;border-bottom:1px solid var(--border)}
+.lead-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:10px}
+.lead-card-empty{padding:20px;text-align:center;color:var(--text-3);font-size:13px;font-style:italic}
+.lead-card-content{display:none}
+.lead-card-content.visible{display:block}
+.lc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.lc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
+.lc-name{font-size:14px;font-weight:500}
+.lc-role{font-size:11px;color:var(--text-3)}
+.lc-fields{display:flex;flex-direction:column;gap:4px}
+.lc-field{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.lc-field-label{color:var(--text-3)}
+.lc-field-value{font-weight:500;text-align:right;max-width:55%}
+.lc-note{margin-top:8px;padding:8px 10px;background:var(--amber-bg);border-radius:var(--radius-sm);font-size:11px;color:var(--amber-text);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.lc-link{display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--accent);text-decoration:none;font-weight:500;padding:6px;border-radius:var(--radius-sm);border:1px solid var(--accent);transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.lc-link:hover{background:var(--accent-light)}
+
+/* SCRIPTS */
+.scripts-section{padding:16px;flex:1}
+.scripts-section .mini-dash-title{margin-bottom:8px}
+.script-search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:12px;margin-bottom:8px;background:var(--surface-alt);transition:border .15s}
+.script-search:focus{outline:none;border-color:var(--accent)}
+.script-item{padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center bottom}
+.script-item:hover{border-color:var(--accent);background:var(--accent-light)}
+.script-item.expanded{background:var(--surface-alt);border-color:var(--border-hover)}
+.script-phase{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;background:var(--accent-light);color:var(--accent);margin-bottom:4px;display:inline-block}
+.script-name{font-size:13px;font-weight:500}
+.script-
+.script-item.expanded .script-
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">Autopilot<span>CRM</span></div>
+  <div class="topbar-nav">
+    <button onclick="showView('pipeline')" id="nav-pipeline">Mi pipeline</button>
+    <button onclick="showView('mistareas')" id="nav-mistareas">Mis tareas</button>
+
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-notif">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-badge">2</span>
+    </div>
+    <div class="topbar-user" title="Ignacio Montero — Vendedor">IM</div>
+  </div>
+</div>
+<div class="view" id="view-pipeline">
+
+<div id="pipeline-view">
+  <div class="pipeline-header">
+    <div class="pipeline-title">Mi pipeline</div>
+    <div class="pipeline-stats">
+      <span class="stat-chip"><b>5</b> deals activos</span>
+      <span class="stat-chip"><b>€64.700</b> en pipeline</span>
+      <span class="stat-chip" style="background:var(--accent);color:#fff;border-color:var(--accent);cursor:pointer;font-weight:600" onclick="alert('Formulario: Nuevo lead manual
+
+• Empresa
+• Contacto + teléfono + email
+• Valor estimado
+• Fuente (Referral / Evento / BBDD / Otro)
+• Notas
+
+Se asigna automáticamente a Ignacio')">+ Nuevo lead</span>
+    </div>
+  </div>
+  <div class="pipeline-filters">
+    
+    <button class="filter-btn active">Ignacio</button>
+    
+    <button class="filter-btn">Sector: Mascotas</button>
+    <button class="filter-btn">€ > 5.000</button>
+  </div>
+
+  <div class="kanban" id="kanban"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="dp-header">
+    <button class="dp-close" onclick="closeDetail()">&#10005;</button>
+    <div>
+      <div class="dp-title" id="dp-title"></div>
+      <div class="dp-subtitle" id="dp-subtitle"></div>
+    </div>
+  </div>
+  <div id="dp-content"></div>
+  <div class="action-bar">
+    <button class="action-btn" onclick="alert('Llamada registrada ✓')">&#9742; Llamada</button>
+    <button class="action-btn" onclick="alert('Nota guardada ✓')">&#9998; Nota</button>
+    <button class="action-btn" onclick="alert('Reunión registrada ✓')">&#128197; Reunión</button>
+    <button class="action-btn primary" onclick="alert('Avanzar de fase ✓')">Avanzar fase &#8594;</button>
+  </div>
+</div></div>
+<div class="view" id="view-mistareas">
+
+<div class="main">
+  <!-- LEFT: TASK INBOX -->
+  <div class="inbox">
+    <div class="inbox-header">
+      <div>
+        <div class="inbox-title">Buenos días, Ignacio</div>
+        <div class="inbox-subtitle">Tienes <b style="color:var(--red)">2 tareas urgentes</b> y 5 pendientes para hoy</div>
+      </div>
+    </div>
+    <div class="inbox-filters">
+      <button class="active" onclick="filterTasks('all',this)">Todas (9)</button>
+      <button onclick="filterTasks('urgent',this)">Urgentes (2)</button>
+      <button onclick="filterTasks('today',this)">Hoy (3)</button>
+      <button onclick="filterTasks('auto',this)">Automáticas</button>
+    </div>
+
+    <!-- URGENT -->
+    <div class="section-label"><span class="dot" style="background:var(--red)"></span><span style="color:var(--red-text)">Urgente — acción inmediata</span><span class="count">2</span></div>
+
+    <div class="task" data-cat="urgent auto" onclick="selectTask(this,0)">
+      <div class="task-priority pri-red"></div>
+      <div class="task-body">
+        <div class="task-company">Amor de Gato - CatShop</div>
+        <div class="task-action">Seguimiento vencido: 7 días sin respuesta del cliente</div>
+        <div class="task-meta">
+          <span class="task-tag tag-auto">&#9889; Automática</span>
+          <span class="task-due due-overdue">Vencida hace 3 días</span>
+          <span>Seguimiento</span>
+          <span>€3.400</span>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn done" onclick="event.stopPropagation();completeTask(this)">Hecho &#10003;</button>
+          <button class="task-btn" onclick="event.stopPropagation();alert('Tarea pospuesta a mañana')">Posponer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-cat="urgent auto" onclick="selectTask(this,1)">
+      <div class="task-priority pri-red"></div>
+      <div class="task-body">
+        <div class="task-company">La Caseta de los Animales</div>
+        <div class="task-action">Deal estancado: 12 días en negociación (máx. 10d). Cerrar condiciones de pago.</div>
+        <div class="task-meta">
+          <span class="task-tag tag-auto">&#9889; Automática</span>
+          <span class="task-due due-overdue">Supera límite en 2 días</span>
+          <span>Negociación</span>
+          <span>€18.500</span>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn done" onclick="event.stopPropagation();completeTask(this)">Hecho &#10003;</button>
+          <button class="task-btn" onclick="event.stopPropagation();alert('Tarea pospuesta a mañana')">Posponer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="section-label" style="margin-top:8px"><span class="dot" style="background:var(--amber)"></span><span style="color:var(--amber-text)">Alta — vence hoy o mañana</span><span class="count">3</span></div>
+
+    <div class="task" data-cat="today manual" onclick="selectTask(this,2)">
+      <div class="task-priority pri-amber"></div>
+      <div class="task-body">
+        <div class="task-company">Lobitos&Co S.L.</div>
+        <div class="task-action">Enviar propuesta formal con descuento por volumen y condiciones de exclusividad</div>
+        <div class="task-meta">
+          <span class="task-tag tag-manual">Manual</span>
+          <span class="task-due due-today">Hoy</span>
+          <span>Propuesta enviada</span>
+          <span>€22.000</span>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn done" onclick="event.stopPropagation();completeTask(this)">Hecho &#10003;</button>
+          <button class="task-btn" onclick="event.stopPropagation();alert('Tarea pospuesta a mañana')">Posponer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-cat="today manual" onclick="selectTask(this,3)">
+      <div class="task-priority pri-amber"></div>
+      <div class="task-body">
+        <div class="task-company">Agropecuario Santa Lucía</div>
+        <div class="task-action">Confirmar reunión del viernes con Elena y preparar catálogo línea rural</div>
+        <div class="task-meta">
+          <span class="task-tag tag-manual">Manual</span>
+          <span class="task-due due-today">Mañana</span>
+          <span>Contacto realizado</span>
+          <span>€12.300</span>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn done" onclick="event.stopPropagation();completeTask(this)">Hecho &#10003;</button>
+          <button class="task-btn" onclick="event.stopPropagation();alert('Tarea pospuesta')">Posponer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-cat="today auto" onclick="selectTask(this,4)">
+      <div class="task-priority pri-amber"></div>
+      <div class="task-body">
+        <div class="task-company">Clínica Animalia</div>
+        <div class="task-action">Seguimiento 24h: cliente ADS nuevo sin segundo contacto. Enviar catálogo premium.</div>
+        <div class="task-meta">
+          <span class="task-tag tag-auto">&#9889; Automática</span>
+          <span class="task-due due-today">Hoy (24h límite ADS)</span>
+          <span>Nuevo</span>
+          <span>€8.500</span>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn done" onclick="event.stopPropagation();completeTask(this)">Hecho &#10003;</button>
+          <button class="task-btn" onclick="event.stopPropagation();alert('Tarea pospuesta')">Posponer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NORMAL -->
+    <div class="section-label" style="margin-top:8px"><span class="dot" style="background:var(--green)"></span><span style="color:var(--green-text)">Normal — próximos días</span><span class="count">4</span></div>
+
+    <div class="task" data-cat="normal manual" onclick="selectTask(this,5)">
+      <div class="task-priority pri-green"></div>
+      <div class="task-body">
+        <div class="task-company">Lobitos&Co S.L.</div>
+        <div class="task-action">Hacer follow-up 48h después de enviar propuesta</div>
+        <div class="task-meta">
+          <span class="task-tag tag-manual">Manual</span>
+          <span class="task-due due-future">06 Abr</span>
+          <span>Propuesta enviada</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-cat="normal manual" onclick="selectTask(this,3)">
+      <div class="task-priority pri-green"></div>
+      <div class="task-body">
+        <div class="task-company">Agropecuario Santa Lucía</div>
+        <div class="task-action">Reunión presencial viernes — llevar muestras línea rural</div>
+        <div class="task-meta">
+          <span class="task-tag tag-manual">Manual</span>
+          <span class="task-due due-future">07 Abr</span>
+          <span>Contacto realizado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-cat="normal auto" onclick="selectTask(this,1)">
+      <div class="task-priority pri-green"></div>
+      <div class="task-body">
+        <div class="task-company">La Caseta de los Animales</div>
+        <div class="task-action">Si no se cierra pago: escalar a dirección para aprobación de 45 días</div>
+        <div class="task-meta">
+          <span class="task-tag tag-auto">&#9889; Automática</span>
+          <span class="task-due due-future">08 Abr</span>
+          <span>Negociación</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-cat="normal manual" onclick="selectTask(this,0)">
+      <div class="task-priority pri-green"></div>
+      <div class="task-body">
+        <div class="task-company">Amor de Gato - CatShop</div>
+        <div class="task-action">Si no responde: última llamada antes de marcar como perdido</div>
+        <div class="task-meta">
+          <span class="task-tag tag-manual">Manual</span>
+          <span class="task-due due-future">10 Abr</span>
+          <span>Seguimiento</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- MINI DASHBOARD -->
+    <div class="mini-dash">
+      <div class="mini-dash-title">Mis números · Abril 2026</div>
+      <div class="kpi-row">
+        <div class="kpi-mini">
+          <div class="kpi-mini-value" style="color:var(--accent)">€64.700</div>
+          <div class="kpi-mini-label">Mi pipeline</div>
+          <div class="kpi-mini-change" style="color:var(--green)">&#9650; 8% vs mar</div>
+        </div>
+        <div class="kpi-mini">
+          <div class="kpi-mini-value" style="color:var(--green)">38%</div>
+          <div class="kpi-mini-label">Mi conversión</div>
+          <div class="kpi-mini-change" style="color:var(--green)">&#9650; 5pp vs mar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMISSIONS -->
+    <div class="commission-box">
+      <div class="mini-dash-title">Comisiones</div>
+      <div class="comm-total">
+        <div><div class="comm-total-label">Acumulado abril</div></div>
+        <div class="comm-total-value">€1.520</div>
+      </div>
+      <div class="comm-item"><span class="comm-company">Example Veterinaria (cerrado mar)</span><span class="comm-amount">+€380</span></div>
+      <div class="comm-item"><span class="comm-company">PetWorld Madrid (cerrado mar)</span><span class="comm-amount">+€620</span></div>
+      <div class="comm-item"><span class="comm-company">VetClub Sur (cerrado feb)</span><span class="comm-amount">+€520</span></div>
+      <div style="text-align:center;margin-top:8px">
+        <span style="font-size:11px;color:var(--text-3);cursor:pointer;text-decoration:underline" onclick="alert('Historial completo de comisiones — disponible en siguiente iteración')">Ver historial completo</span>
+      </div>
+    </div>
+
+    <!-- LEAD CARD (aparece al seleccionar tarea) -->
+    <div class="lead-card">
+      <div class="lead-card-title">Ficha rápida del lead</div>
+      <div class="lead-card-empty" id="lead-empty">Selecciona una tarea para ver los datos del lead</div>
+      <div class="lead-card-content" id="lead-content"></div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <div class="scripts-section">
+      <div class="mini-dash-title">Scripts comerciales</div>
+      <input class="script-search" type="text" placeholder="Buscar script..." oninput="filterScripts(this.value)">
+
+      <div class="script-item" onclick="toggleScript(this)">
+        <div class="script-phase">Nuevo / Primer contacto</div>
+        <div class="script-name">Apertura llamada en frío — Lead ADS</div>
+        <div class="script-body">
+          "Buenos días [nombre], le llamo de RSR Bridge. Hemos recibido su solicitud a través de nuestra web sobre [producto/servicio]. ¿Es buen momento para hablar 2 minutos?"<br><br>
+          <b>Si dice sí:</b> "Perfecto. Trabajamos con [tipo de negocio similar] en [zona] y les ayudamos a [beneficio principal]. ¿Qué es lo que más le interesa?"<br><br>
+          <b>Si dice no:</b> "Entiendo. ¿Cuándo le viene mejor que le llame? Le envío mientras tanto nuestro catálogo por email."<br><br>
+          <i>Tip: No vender en la primera llamada. Objetivo = cualificar + agendar segundo contacto.</i>
+        </div>
+      </div>
+
+      <div class="script-item" onclick="toggleScript(this)">
+        <div class="script-phase">Seguimiento</div>
+        <div class="script-name">Reactivar lead que no responde</div>
+        <div class="script-body">
+          "Hola [nombre], soy [tu nombre] de RSR Bridge. Le llamo porque le envié información sobre [producto] y quería saber si tuvo oportunidad de revisarla."<br><br>
+          <b>Si no la revisó:</b> "Sin problema, se la reenvío ahora mismo. ¿Le parece si hablamos el [día] para comentarla juntos?"<br><br>
+          <b>Si la revisó pero no está interesado:</b> "Entiendo. ¿Hay algo específico que no encaje con lo que necesitan? A veces podemos adaptar condiciones."<br><br>
+          <i>Tip: Después de 3 intentos sin respuesta, considerar marcar como "no interesa" y liberar tiempo para leads activos.</i>
+        </div>
+      </div>
+
+      <div class="script-item" onclick="toggleScript(this)">
+        <div class="script-phase">Negociación</div>
+        <div class="script-name">Manejo de objeción de precio</div>
+        <div class="script-body">
+          <b>Cliente dice "es caro":</b><br>
+          "Entiendo la preocupación por el precio. Permítame preguntarle: ¿con qué está comparando? Porque nuestro producto incluye [diferenciador 1] y [diferenciador 2] que otros no ofrecen."<br><br>
+          <b>Si compara con competidor:</b> "El precio de [competidor] no incluye [X]. Si sumamos eso, verá que estamos muy alineados. Además, nuestro margen para usted es un [X]% superior."<br><br>
+          <b>Cierre:</b> "¿Qué le parece si hacemos un primer pedido de prueba con condiciones especiales para que compruebe la calidad y el servicio?"<br><br>
+          <i>Tip: Nunca bajar precio sin quitar algo. Si ofreces descuento, vincula a volumen o plazo de pago.</i>
+        </div>
+      </div>
+
+      <div class="script-item" onclick="toggleScript(this)">
+        <div class="script-phase">Propuesta</div>
+        <div class="script-name">Follow-up después de enviar propuesta</div>
+        <div class="script-body">
+          "Hola [nombre], le llamo para comentar la propuesta que le envié el [fecha]. ¿Ha tenido oportunidad de revisarla con su equipo?"<br><br>
+          <b>Preguntas clave:</b><br>
+          - "¿Hay algo que no haya quedado claro?"<br>
+          - "¿Los productos encajan con lo que buscaban?"<br>
+          - "¿Cuál es el proceso de decisión en su empresa?"<br>
+          - "¿Hay alguien más que deba ver la propuesta?"<br><br>
+          <i>Tip: El objetivo es identificar posibles bloqueadores internos y ofrecer resolver dudas en una reunión breve.</i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<script>
+
+let currentView = null;
+
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.topbar-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.getElementById('nav-' + view).classList.add('active');
+  if (view === 'pipeline' && currentView !== 'pipeline') buildKanban();
+  currentView = view;
+}
+
+/* ===== PIPELINE JS ===== */
+
+const COLORS = ['#0D7377','#00B894','#E17055','#0984E3','#FDCB6E','#E84393','#00CEC9','#636E72'];
+const leads = [
+  { id:1, company:'Clínica Animalia', contact:'Carmen Ruiz', role:'Directora', phone:'+34 612 345 678', email:'carmen@animalia.es', value:8500, days:2, phase:0, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'ADS', province:'Madrid', nextAction:'Enviar catálogo premium', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Carmen Ruiz',role:'Directora',phone:'+34 612 345 678',email:'carmen@animalia.es',primary:true},{name:'Andrés López',role:'Veterinario jefe',phone:'+34 623 456 789',email:'andres@animalia.es',primary:false}],
+    notes:'Cliente potencial con 3 centros en Madrid. Interesada en línea premium de alimentación natural.',
+    timeline:[
+      {type:'call',text:'Llamada inicial de 12 min. Carmen interesada en producto premium para sus 3 clínicas.',meta:'Hoy, 09:30 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Lead creado desde formulario web (campaña Google ADS Madrid)',meta:'Ayer, 14:20 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Alimentación premium x3 centros',value:'€8.500',phase:'Nuevo',color:'var(--accent)'}]
+  },
+  { id:2, company:'MimoPets - Todo para tu mascota', contact:'Jaime Torres', role:'Gerente', phone:'+34 634 567 890', email:'jaime@mimopets.com', value:4200, days:1, phase:0, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'ADS', province:'Valencia', nextAction:'Llamar para presentación', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Jaime Torres',role:'Gerente',phone:'+34 634 567 890',email:'jaime@mimopets.com',primary:true}],
+    notes:'Tienda online + física en Valencia. Buscando proveedor de accesorios.',
+    timeline:[
+      {type:'phase',text:'Lead creado desde campaña ADS Valencia',meta:'Hoy, 08:15 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Accesorios mascotas Q2',value:'€4.200',phase:'Nuevo',color:'var(--accent)'}]
+  },
+  { id:3, company:'Agropecuario Santa Lucía', contact:'Elena Morales', role:'Compradora', phone:'+34 645 678 901', email:'elena@agrosantalucia.es', value:12300, days:4, phase:1, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'Referral', province:'Sevilla', nextAction:'Confirmar reunión viernes', nextDate:'05 Abr', sem:'green',
+    contacts:[{name:'Elena Morales',role:'Compradora',phone:'+34 645 678 901',email:'elena@agrosantalucia.es',primary:true},{name:'Rafael Morales',role:'Director',phone:'+34 656 789 012',email:'rafael@agrosantalucia.es',primary:false}],
+    notes:'Cooperativa grande, 12 puntos de venta. Potencial alto. Referido por Veterinarios del Sur.',
+    timeline:[
+      {type:'call',text:'Segunda llamada. Elena confirma interés. Pide reunión con catálogo completo.',meta:'Hoy, 11:00 — Ignacio',icon:'&#9742;'},
+      {type:'note',text:'Notas: Tienen contrato con Acme expirando en mayo. Oportunidad de captar antes de renovación.',meta:'Ayer, 16:45 — Ignacio',icon:'&#9998;'},
+      {type:'call',text:'Primera llamada exploratoria. 15 min. Interesados en línea rural.',meta:'30 Mar, 10:20 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Lead creado manualmente (referido por Veterinarios del Sur)',meta:'29 Mar, 09:00 — Ignacio',icon:'&#9654;'}
+    ],
+    opps:[{name:'Suministro línea rural 12 puntos',value:'€12.300',phase:'Contacto realizado',color:'#6366F1'}]
+  },
+  { id:4, company:'PetShop Online BCN', contact:'Marc Soler', role:'CEO', phone:'+34 667 890 123', email:'marc@petshoponline.es', value:6800, days:3, phase:1, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'Organic', province:'Barcelona', nextAction:'Enviar propuesta por email', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Marc Soler',role:'CEO',phone:'+34 667 890 123',email:'marc@petshoponline.es',primary:true}],
+    notes:'E-commerce puro. 5000 pedidos/mes. Busca proveedor de snacks naturales.',
+    timeline:[
+      {type:'call',text:'Llamada de seguimiento. Marc pide propuesta formal con precios por volumen.',meta:'Ayer, 14:30 — Laura',icon:'&#9742;'},
+      {type:'phase',text:'Avanzado a "Contacto realizado"',meta:'01 Abr, 10:00 — Laura',icon:'&#9654;'},
+      {type:'phase',text:'Lead creado desde formulario web orgánico',meta:'31 Mar, 16:00 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Snacks naturales — proveedor',value:'€6.800',phase:'Contacto realizado',color:'#6366F1'}]
+  },
+  { id:5, company:'Amor de Gato - CatShop', contact:'Sofía Blanco', role:'Propietaria', phone:'+34 678 901 234', email:'sofia@amordegato.com', value:3400, days:7, phase:2, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'ADS', province:'Bilbao', nextAction:'Llamar para cerrar reunión', nextDate:'03 Abr', sem:'amber',
+    contacts:[{name:'Sofía Blanco',role:'Propietaria',phone:'+34 678 901 234',email:'sofia@amordegato.com',primary:true}],
+    notes:'Tienda especializada en gatos. Interés en juguetes y alimentación premium felina. Algo lenta en responder.',
+    timeline:[
+      {type:'note',text:'Sofía no respondió al último email. Intentar llamada directa mañana.',meta:'02 Abr, 17:00 — Ignacio',icon:'&#9998;'},
+      {type:'call',text:'Llamada sin respuesta. Dejado mensaje de voz.',meta:'01 Abr, 11:30 — Ignacio',icon:'&#9742;'},
+      {type:'call',text:'Llamada de seguimiento. Interesada pero pide tiempo para revisar catálogo.',meta:'28 Mar, 09:45 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Avanzado a "Seguimiento"',meta:'27 Mar, 15:00 — Ignacio',icon:'&#9654;'},
+      {type:'phase',text:'Lead creado desde campaña ADS Bilbao',meta:'25 Mar, 12:00 — Sistema',icon:'&#9654;'}
+    ],
+    opps:[{name:'Línea felina premium',value:'€3.400',phase:'Seguimiento',color:'#A855F7'}]
+  },
+  { id:6, company:'Luna Perruna', contact:'Pablo Navarro', role:'Director comercial', phone:'+34 689 012 345', email:'pablo@lunaperruna.es', value:15600, days:5, phase:2, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'Referral', province:'Málaga', nextAction:'Preparar catálogo personalizado', nextDate:'05 Abr', sem:'green',
+    contacts:[{name:'Pablo Navarro',role:'Director comercial',phone:'+34 689 012 345',email:'pablo@lunaperruna.es',primary:true},{name:'Marina Gil',role:'Responsable de compras',phone:'+34 690 123 456',email:'marina@lunaperruna.es',primary:false}],
+    notes:'Cadena 5 tiendas Málaga. Alto potencial. Requieren catálogo personalizado con precios especiales.',
+    timeline:[
+      {type:'meeting',text:'Videollamada con Pablo y Marina. Muy receptivos. Piden propuesta para 5 tiendas.',meta:'02 Abr, 10:00 — Laura',icon:'&#128197;'},
+      {type:'call',text:'Primera llamada con Pablo. Refiere a Marina para temas de compras.',meta:'30 Mar, 14:00 — Laura',icon:'&#9742;'},
+      {type:'phase',text:'Lead creado (referido por distribuidor Sur)',meta:'29 Mar, 11:00 — Laura',icon:'&#9654;'}
+    ],
+    opps:[{name:'Suministro 5 tiendas Málaga',value:'€15.600',phase:'Seguimiento',color:'#A855F7'}]
+  },
+  { id:7, company:'Lobitos&Co S.L.', contact:'Teresa Vega', role:'Gerente', phone:'+34 601 234 567', email:'teresa@lobitosco.es', value:22000, days:6, phase:3, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'Organic', province:'Zaragoza', nextAction:'Enviar propuesta formal', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Teresa Vega',role:'Gerente',phone:'+34 601 234 567',email:'teresa@lobitosco.es',primary:true}],
+    notes:'Distribuidora regional Aragón. 20+ clientes B2B. Si se cierra, abre todo el mercado aragonés.',
+    timeline:[
+      {type:'note',text:'Propuesta en preparación. Incluir descuento por volumen y condiciones de exclusividad regional.',meta:'Hoy, 08:30 — Ignacio',icon:'&#9998;'},
+      {type:'meeting',text:'Reunión presencial en Zaragoza. Teresa muy interesada en exclusividad regional.',meta:'01 Abr, 12:00 — Ignacio',icon:'&#128197;'},
+      {type:'call',text:'Llamada para concretar fecha de reunión presencial.',meta:'28 Mar, 16:00 — Ignacio',icon:'&#9742;'},
+      {type:'phase',text:'Avanzado a "Propuesta enviada"',meta:'28 Mar, 16:30 — Ignacio',icon:'&#9654;'}
+    ],
+    opps:[{name:'Distribución exclusiva Aragón',value:'€22.000',phase:'Propuesta enviada',color:'var(--blue)'}]
+  },
+  { id:8, company:'AnimalStar S.L.', contact:'Diego Fernández', role:'Dir. de operaciones', phone:'+34 612 345 000', email:'diego@animalstar.es', value:9800, days:4, phase:3, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'ADS', province:'Asturias', nextAction:'Responder dudas sobre logística', nextDate:'04 Abr', sem:'green',
+    contacts:[{name:'Diego Fernández',role:'Dir. de operaciones',phone:'+34 612 345 000',email:'diego@animalstar.es',primary:true}],
+    notes:'Cadena 3 tiendas en Asturias. Interés en catálogo completo. Preguntas sobre logística de entrega.',
+    timeline:[
+      {type:'call',text:'Diego pregunta por plazos de entrega a Asturias y mínimos de pedido.',meta:'02 Abr, 15:30 — Laura',icon:'&#9742;'},
+      {type:'phase',text:'Catálogo enviado por email',meta:'01 Abr, 09:00 — Laura',icon:'&#9654;'}
+    ],
+    opps:[{name:'Catálogo completo 3 tiendas',value:'€9.800',phase:'Propuesta enviada',color:'var(--blue)'}]
+  },
+  { id:9, company:'La Caseta de los Animales', contact:'Lucía Hernández', role:'Propietaria', phone:'+34 623 456 000', email:'lucia@lacaseta.es', value:18500, days:12, phase:4, seller:'Ignacio', sellerInit:'IM', sellerColor:COLORS[0], source:'Referral', province:'Valencia', nextAction:'Cerrar condiciones de pago', nextDate:'03 Abr', sem:'amber',
+    contacts:[{name:'Lucía Hernández',role:'Propietaria',phone:'+34 623 456 000',email:'lucia@lacaseta.es',primary:true},{name:'David Roca',role:'Contable',phone:'+34 634 567 000',email:'david@lacaseta.es',primary:false}],
+    notes:'Negociación avanzada. Pide 60 días de pago. Nosotros ofrecemos 30. Intentar cerrar en 45 días como compromiso.',
+    timeline:[
+      {type:'call',text:'Lucía insiste en 60 días. Propongo 45 como punto medio. Lo consulta con David.',meta:'02 Abr, 11:00 — Ignacio',icon:'&#9742;'},
+      {type:'meeting',text:'Segunda reunión. Precios acordados. Queda pendiente plazo de pago.',meta:'28 Mar, 10:00 — Ignacio',icon:'&#128197;'},
+      {type:'meeting',text:'Primera reunión. Presentación catálogo. Muy buena recepción.',meta:'22 Mar, 14:00 — Ignacio',icon:'&#128197;'},
+      {type:'phase',text:'Avanzado a "Negociación"',meta:'22 Mar, 16:00 — Ignacio',icon:'&#9654;'}
+    ],
+    opps:[{name:'Contrato anual suministro',value:'€18.500',phase:'Negociación',color:'#E84393'}]
+  },
+  { id:10, company:'VetPartners Galicia', contact:'Ana Prieto', role:'Dir. de compras', phone:'+34 645 678 000', email:'ana@vetpartners.gal', value:14200, days:18, phase:4, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'Organic', province:'A Coruña', nextAction:'URGENTE: Responder contraoferta', nextDate:'02 Abr', sem:'red',
+    contacts:[{name:'Ana Prieto',role:'Dir. de compras',phone:'+34 645 678 000',email:'ana@vetpartners.gal',primary:true}],
+    notes:'ALERTA: Deal estancado 18 días en negociación. Ana envió contraoferta hace 3 días sin respuesta. Riesgo alto de perder.',
+    timeline:[
+      {type:'note',text:'ALERTA SISTEMA: Deal lleva 18 días en negociación (máx. esperado: 10 días)',meta:'Hoy, 07:00 — Sistema',icon:'&#9888;'},
+      {type:'note',text:'Ana envió contraoferta por email. Pendiente de revisar y responder.',meta:'31 Mar, 09:00 — Laura',icon:'&#9998;'},
+      {type:'meeting',text:'Reunión online. Buena negociación pero piden ajuste de precio del 8%.',meta:'20 Mar, 11:00 — Laura',icon:'&#128197;'},
+      {type:'phase',text:'Avanzado a "Negociación"',meta:'16 Mar, 14:00 — Laura',icon:'&#9654;'}
+    ],
+    opps:[{name:'Red veterinaria 8 clínicas',value:'€14.200',phase:'Negociación',color:'#E84393'}]
+  },
+  { id:11, company:'Example Veterinaria S.C.P.', contact:'Roberto Blázquez', role:'Socio fundador', phone:'+34 656 789 000', email:'roberto@exampleveterinaria.es', value:7600, days:0, phase:5, seller:'Laura', sellerInit:'LR', sellerColor:COLORS[1], source:'ADS', province:'Barcelona', nextAction:'Solicitar factura', nextDate:'03 Abr', sem:'green',
+    contacts:[{name:'Roberto Blázquez',role:'Socio fundador',phone:'+34 656 789 000',email:'roberto@exampleveterinaria.es',primary:true}],
+    notes:'¡GANADO! Contrato firmado el 02 de abril. Pendiente solicitar factura para activar pedido.',
+    timeline:[
+      {type:'phase',text:'Deal cerrado como GANADO. Contrato firmado.',meta:'02 Abr, 17:00 — Laura',icon:'&#10003;'},
+      {type:'meeting',text:'Firma del contrato en oficina del cliente.',meta:'02 Abr, 16:00 — Laura',icon:'&#128197;'}
+    ],
+    opps:[{name:'Primer pedido productos premium',value:'€7.600',phase:'Cerrado ganado',color:'var(--text-3)'}]
+  }
+];
+
+const phases = [
+  { name:'Nuevo', color:'var(--accent)', ids:[1] },
+  { name:'Contacto realizado', color:'#6366F1', ids:[3] },
+  { name:'Seguimiento', color:'#A855F7', ids:[5] },
+  { name:'Propuesta enviada', color:'#0984E3', ids:[7] },
+  { name:'Negociación', color:'#E84393', ids:[9] },
+  { name:'Cerrado', color:'var(--text-3)', ids:[] }
+];
+
+function buildKanban(){
+  const kanban = document.getElementById('kanban');
+  kanban.innerHTML = '';
+  phases.forEach((phase,pi)=>{
+    const phaseLeads = phase.ids.map(id=>leads.find(l=>l.id===id));
+    const total = phaseLeads.reduce((s,l)=>s+l.value,0);
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `
+      <div class="column-head">
+        <span class="column-dot" style="background:${phase.color}"></span>
+        <span class="column-name">${phase.name}</span>
+        <span class="column-count">${phaseLeads.length}</span>
+        <span class="column-value">€${total.toLocaleString('es')}</span>
+      </div>
+      <div class="column-cards">
+        ${phaseLeads.map(l=>`
+          <div class="deal-card" onclick="openDetail(${l.id})">
+            <span class="semaphore sem-${l.sem}"></span>
+            <div class="company">${l.company}</div>
+            <div class="value">€${l.value.toLocaleString('es')}</div>
+            <div class="meta">
+              <div class="avatar" style="background:${l.sellerColor}">${l.sellerInit}</div>
+              <span>${l.days}d en fase</span>
+              <span class="meta-sep"></span>
+              <span class="tag ${l.source==='ADS'?'tag-ads':l.source==='Organic'?'tag-organic':'tag-referral'}">${l.source}</span>
+            </div>
+            <div class="next-action">&#10148; ${l.nextAction} · ${l.nextDate}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    kanban.appendChild(col);
+  });
+}
+
+function openDetail(id){
+  const l = leads.find(x=>x.id===id);
+  if(!l) return;
+  document.getElementById('dp-title').textContent = l.company;
+  document.getElementById('dp-subtitle').textContent = `${l.province} · ${l.source} · Vendedor: ${l.seller}`;
+  
+  const semLabel = l.sem==='green'?'En plazo':l.sem==='amber'?'Atención':'En riesgo';
+  const semClass = l.sem==='green'?'green':l.sem==='amber'?'amber':'red';
+  
+  document.getElementById('dp-content').innerHTML = `
+    <div class="dp-section">
+      <div class="dp-section-title">Información del deal</div>
+      <div class="dp-field"><span class="dp-field-label">Valor</span><span class="dp-field-value" style="color:var(--accent);font-size:18px">€${l.value.toLocaleString('es')}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Estado</span><span class="dp-field-value"><span class="tag" style="background:var(--${semClass}-bg);color:var(--${semClass}-text)">${semLabel} · ${l.days}d en fase</span></span></div>
+      <div class="dp-field"><span class="dp-field-label">Próxima acción</span><span class="dp-field-value">${l.nextAction}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Fecha</span><span class="dp-field-value">${l.nextDate}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Fuente</span><span class="dp-field-value"><span class="tag ${l.source==='ADS'?'tag-ads':l.source==='Organic'?'tag-organic':'tag-referral'}">${l.source}</span></span></div>
+      <div class="dp-field"><span class="dp-field-label">Provincia</span><span class="dp-field-value">${l.province}</span></div>
+      <div class="dp-field"><span class="dp-field-label">Vendedor</span><span class="dp-field-value">${l.seller}</span></div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Contactos</div>
+      <div class="dp-contacts">
+        ${l.contacts.map(c=>`
+          <div class="dp-contact">
+            <div class="avatar" style="background:${COLORS[Math.floor(Math.random()*8)]};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:600">${c.name.split(' ').map(w=>w[0]).join('')}</div>
+            <div class="dp-contact-info">
+              <div class="dp-contact-name">${c.name} ${c.primary?'<span class="primary-badge">Principal</span>':''}</div>
+              <div class="dp-contact-role">${c.role}</div>
+              <div class="dp-contact-channels">${c.phone} · ${c.email}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Notas internas</div>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.6">${l.notes}</p>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Oportunidades vinculadas</div>
+      <div class="opp-list">
+        ${l.opps.map(o=>`
+          <div class="opp-item">
+            <span class="opp-dot" style="background:${o.color}"></span>
+            <span class="opp-name">${o.name}</span>
+            <span class="opp-value">${o.value}</span>
+            <span class="opp-phase">${o.phase}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Historial de actividad</div>
+      <div class="timeline">
+        ${l.timeline.map(t=>`
+          <div class="tl-item">
+            <div class="tl-line"></div>
+            <div class="tl-dot ${t.type}">${t.icon}</div>
+            <div class="tl-content">
+              <div class="tl-text">${t.text}</div>
+              <div class="tl-meta">${t.meta}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDetail(); });
+
+buildKanban();
+
+/* ===== COCKPIT JS ===== */
+
+const leadData = [
+  {name:'Sofía Blanco',company:'Amor de Gato - CatShop',role:'Propietaria',phone:'+34 678 901 234',email:'sofia@amordegato.com',province:'Bilbao',source:'ADS',value:'€3.400',phase:'Seguimiento',days:'7d',color:'#E84393',note:'Tienda especializada en gatos. 2 llamadas sin respuesta + 1 email sin reply. Considerar último intento antes de descartar.'},
+  {name:'Lucía Hernández',company:'La Caseta de los Animales',role:'Propietaria',phone:'+34 623 456 000',email:'lucia@lacaseta.es',province:'Valencia',source:'Referral',value:'€18.500',phase:'Negociación',days:'12d',color:'#E2A336',note:'Negociación avanzada. Pide 60 días de pago, nosotros ofrecemos 30. Probar 45 días como compromiso. Hablar con David (contable).'},
+  {name:'Teresa Vega',company:'Lobitos&Co S.L.',role:'Gerente',phone:'+34 601 234 567',email:'teresa@lobitosco.es',province:'Zaragoza',source:'Organic',value:'€22.000',phase:'Propuesta',days:'6d',color:'#0D7377',note:'Distribuidora regional Aragón. 20+ clientes B2B. Incluir descuento por volumen y condiciones de exclusividad en la propuesta.'},
+  {name:'Elena Morales',company:'Agropecuario Santa Lucía',role:'Compradora',phone:'+34 645 678 901',email:'elena@agrosantalucia.es',province:'Sevilla',source:'Referral',value:'€12.300',phase:'Contacto',days:'4d',color:'#27AE60',note:'Cooperativa 12 puntos de venta. Contrato con Acme expira en mayo — oportunidad de captar antes de renovación.'},
+  {name:'Carmen Ruiz',company:'Clínica Animalia',role:'Directora',phone:'+34 612 345 678',email:'carmen@animalia.es',province:'Madrid',source:'ADS',value:'€8.500',phase:'Nuevo',days:'2d',color:'#3498DB',note:'3 centros en Madrid. Primera llamada muy positiva (12 min). Interesada en línea premium de alimentación natural.'}
+];
+
+function selectTask(el, leadIdx){
+  document.querySelectorAll('.task').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  const l = leadData[leadIdx];
+  document.getElementById('lead-empty').style.display='none';
+  const c = document.getElementById('lead-content');
+  c.classList.add('visible');
+  c.innerHTML=`
+    <div class="lc-header">
+      <div class="lc-avatar" style="background:${l.color}">${l.name.split(' ').map(w=>w[0]).join('')}</div>
+      <div><div class="lc-name">${l.name}</div><div class="lc-role">${l.role} · ${l.company}</div></div>
+    </div>
+    <div class="lc-fields">
+      <div class="lc-field"><span class="lc-field-label">Teléfono</span><span class="lc-field-value">${l.phone}</span></div>
+      <div class="lc-field"><span class="lc-field-label">Email</span><span class="lc-field-value" style="color:var(--accent)">${l.email}</span></div>
+      <div class="lc-field"><span class="lc-field-label">Provincia</span><span class="lc-field-value">${l.province}</span></div>
+      <div class="lc-field"><span class="lc-field-label">Fuente</span><span class="lc-field-value">${l.source}</span></div>
+      <div class="lc-field"><span class="lc-field-label">Valor</span><span class="lc-field-value" style="color:var(--accent);font-size:14px">${l.value}</span></div>
+      <div class="lc-field"><span class="lc-field-label">Fase</span><span class="lc-field-value">${l.phase} · ${l.days}</span></div>
+    </div>
+    <div class="lc-note"><b>Última nota:</b> ${l.note}</div>
+    <a href="#" class="lc-link" onclick="event.preventDefault();alert('Navegar a ficha completa /empresa/:id')">Ver ficha completa &#8594;</a>
+  `;
+}
+
+function completeTask(btn){
+  const task = btn.closest('.task');
+  task.style.opacity='.4';
+  task.style.pointerEvents='none';
+  btn.textContent='Completada ✓';
+  const subtitle = document.querySelector('.inbox-subtitle');
+  subtitle.innerHTML = 'Tarea completada. Actividad registrada en el historial.';
+  setTimeout(()=>{ subtitle.innerHTML='Tienes <b style="color:var(--red)">tareas urgentes</b> pendientes'; },2000);
+}
+
+function filterTasks(cat, btn){
+  document.querySelectorAll('.inbox-filters button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.task').forEach(t=>{
+    if(cat==='all'){t.style.display='flex';return}
+    const cats = t.dataset.cat||'';
+    t.style.display = cats.includes(cat)?'flex':'none';
+  });
+}
+
+function toggleScript(el){
+  const wasExpanded = el.classList.contains('expanded');
+  document.querySelectorAll('.script-item').forEach(s=>s.classList.remove('expanded'));
+  if(!wasExpanded) el.classList.add('expanded');
+}
+
+function filterScripts(val){
+  document.querySelectorAll('.script-item').forEach(s=>{
+    const text = s.textContent.toLowerCase();
+    s.style.display = text.includes(val.toLowerCase())?'block':'none';
+  });
+}
+
+/* ===== INIT ===== */
+showView('mistareas');
+
+function openNewLeadForm(){ document.getElementById("lead-overlay").classList.add("open"); document.getElementById("lead-form-panel").classList.add("open"); }
+function closeNewLeadForm(){ document.getElementById("lead-overlay").classList.remove("open"); document.getElementById("lead-form-panel").classList.remove("open"); }
+</script>
+<!-- NUEVO LEAD MODAL -->
+<div class="overlay" id="lead-overlay" onclick="closeNewLeadForm()"></div>
+<div class="detail-panel" id="lead-form-panel" style="width:480px">
+  <div class="dp-header">
+    <button class="dp-close" onclick="closeNewLeadForm()">&#10005;</button>
+    <div><div class="dp-title">Nuevo lead</div><div class="dp-subtitle">Se asignará automáticamente a Ignacio</div></div>
+  </div>
+  <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Empresa *</label><input type="text" placeholder="Nombre de la empresa" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;transition:border .15s" onfocus="this.style.borderColor=&apos;var(--accent)&apos;" onblur="this.style.borderColor=&apos;var(--border)&apos;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Contacto *</label><input type="text" placeholder="Nombre completo" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px"></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Cargo</label><input type="text" placeholder="Ej: Director comercial" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Teléfono *</label><input type="tel" placeholder="+34 600 000 000" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px"></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Email</label><input type="email" placeholder="contacto@empresa.es" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Valor estimado</label><input type="text" placeholder="€0" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px"></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Fuente</label><select style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface)"><option>Referral</option><option>Evento</option><option>BBDD</option><option>Llamada entrante</option><option>Otro</option></select></div>
+    </div>
+    <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Provincia</label><input type="text" placeholder="Ej: Madrid" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px"></div>
+    <div><label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Notas</label><textarea placeholder="Contexto, cómo llegó el contacto..." rows="3" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;resize:vertical"></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button style="flex:1;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;color:var(--text-2)" onclick="closeNewLeadForm()">Cancelar</button>
+      <button style="flex:1;padding:10px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer" onclick="closeNewLeadForm()">Crear lead</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
