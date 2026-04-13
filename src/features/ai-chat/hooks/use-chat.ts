@@ -1,10 +1,13 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import type { Widget } from '../types';
 
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+  /** Widgets attached to this message (charts, tables, citations). Phase 11. */
+  widgets?: Widget[];
 }
 
 interface UseChatReturn {
@@ -62,6 +65,7 @@ export function useChat(): UseChatReturn {
 
       const decoder = new TextDecoder();
       let assistantText = '';
+      let assistantWidgets: Widget[] | undefined;
 
       // Add empty assistant message that we'll update
       setMessages((prev) => [...prev, { role: 'model', text: '' }]);
@@ -86,15 +90,23 @@ export function useChat(): UseChatReturn {
             } else if (parsed.text) {
               assistantText += parsed.text;
             }
+            // Phase 11: capture widgets from the response
+            if (parsed.widgets && Array.isArray(parsed.widgets)) {
+              assistantWidgets = parsed.widgets as Widget[];
+            }
           } catch {
             // Skip malformed chunks
           }
         }
 
-        // Update the last message with accumulated text
+        // Update the last message with accumulated text + widgets
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { role: 'model', text: assistantText };
+          updated[updated.length - 1] = {
+            role: 'model',
+            text: assistantText,
+            widgets: assistantWidgets,
+          };
           return updated;
         });
       }

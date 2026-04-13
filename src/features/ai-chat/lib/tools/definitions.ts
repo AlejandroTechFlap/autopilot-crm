@@ -245,4 +245,95 @@ export const TOOL_DECLARATIONS: FunctionDeclaration[] = [
       properties: {},
     },
   },
+
+  // -- Phase 11: AI Analytics tools ------------------------------------------
+
+  {
+    name: 'query_database',
+    description:
+      'Ejecuta una consulta SQL SELECT contra la base de datos del CRM. Úsala para consultas analíticas: agregaciones (COUNT, SUM, AVG, GROUP BY), tendencias temporales, comparaciones entre vendedores, etc. La consulta se ejecuta con los permisos del usuario (RLS) — un vendedor solo verá sus propios datos. REGLAS: (1) Solo SELECT, nunca INSERT/UPDATE/DELETE. (2) Usa las tablas y columnas del esquema que conoces. (3) Siempre incluye alias legibles. (4) Después de obtener datos, usa render_chart o render_table para visualizarlos.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        sql: {
+          type: Type.STRING,
+          description:
+            'Consulta SELECT válida. Ejemplos: "SELECT fase_actual, COUNT(*) as total FROM deals WHERE resultado IS NULL GROUP BY fase_actual", "SELECT DATE_TRUNC(\'month\', cerrado_en) as mes, SUM(valor) as total FROM deals WHERE resultado = \'ganado\' GROUP BY 1 ORDER BY 1".',
+        },
+        title: {
+          type: Type.STRING,
+          description:
+            'Etiqueta corta para la cita de datos, ej. "Deals por fase", "Ventas mensuales".',
+        },
+      },
+      required: ['sql'],
+    },
+  },
+  {
+    name: 'render_chart',
+    description:
+      'Renderiza un gráfico interactivo en el chat. Llama a esta herramienta DESPUÉS de obtener datos con query_database u otra herramienta. Tipos: bar (comparar categorías), line (tendencias temporales), area (volumen temporal), pie (composición/proporción). Los datos deben ser un array de {label, value}. Para series múltiples, incluye el campo "series".',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        type: {
+          type: Type.STRING,
+          enum: ['bar', 'line', 'area', 'pie'],
+          description: 'Tipo de gráfico.',
+        },
+        title: {
+          type: Type.STRING,
+          description: 'Título del gráfico (ej. "Deals por fase").',
+        },
+        data: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              label: { type: Type.STRING, description: 'Etiqueta del eje X o categoría.' },
+              value: { type: Type.NUMBER, description: 'Valor numérico.' },
+              series: { type: Type.STRING, description: 'Nombre de la serie (opcional, para gráficos multi-serie).' },
+            },
+            required: ['label', 'value'],
+          },
+          description: 'Datos del gráfico.',
+        },
+        xLabel: { type: Type.STRING, description: 'Etiqueta del eje X (opcional).' },
+        yLabel: { type: Type.STRING, description: 'Etiqueta del eje Y (opcional).' },
+      },
+      required: ['type', 'title', 'data'],
+    },
+  },
+  {
+    name: 'render_table',
+    description:
+      'Renderiza una tabla de datos formateada en el chat. Llama a esta herramienta DESPUÉS de obtener datos con query_database. Útil cuando los datos tienen muchas columnas o el usuario pide una vista tabular.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        title: {
+          type: Type.STRING,
+          description: 'Título de la tabla.',
+        },
+        columns: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              key: { type: Type.STRING, description: 'Nombre de la columna en los datos.' },
+              label: { type: Type.STRING, description: 'Etiqueta visible de la columna.' },
+            },
+            required: ['key', 'label'],
+          },
+          description: 'Definición de columnas.',
+        },
+        rows: {
+          type: Type.ARRAY,
+          items: { type: Type.OBJECT, properties: {} },
+          description: 'Filas de datos (array de objetos con claves que coinciden con columns[].key).',
+        },
+      },
+      required: ['title', 'columns', 'rows'],
+    },
+  },
 ];

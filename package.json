@@ -7,6 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "seed": "tsx supabase/seed.ts"
   },
   "dependencies": {
@@ -48,7 +50,8 @@
     "supabase": "^2.85.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

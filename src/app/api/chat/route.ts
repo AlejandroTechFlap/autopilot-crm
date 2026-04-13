@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const ctx = await buildRoleContext(user);
     const systemPrompt = buildRolePrompt(ctx);
-    const { declarations, dispatch } = registerTools(user, supabase);
+    const { declarations, dispatch, widgets } = registerTools(user, supabase);
     const ai = getClient();
     const model = getModel();
 
@@ -150,13 +150,18 @@ export async function POST(request: Request) {
       durationMs: Date.now() - startedAt,
     });
 
-    // Wrap the final text in the same SSE envelope the chat UI already
-    // expects (single chunk + DONE).
+    // Wrap the final text + accumulated widgets in a single SSE chunk.
+    // Phase 11: widgets array is included when presentation tools were used.
+    const payload: Record<string, unknown> = { text: finalText };
+    if (widgets.length > 0) {
+      payload.widgets = widgets;
+    }
+
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ text: finalText })}\n\n`)
+          encoder.encode(`data: ${JSON.stringify(payload)}\n\n`)
         );
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         controller.close();

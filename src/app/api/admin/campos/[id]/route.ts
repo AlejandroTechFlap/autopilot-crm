@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: Ctx): Promise<Response
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('campos_personalizados')
-    .update(updates)
+    .update(updates as never)
     .eq('id', id)
     .select('*')
     .single();

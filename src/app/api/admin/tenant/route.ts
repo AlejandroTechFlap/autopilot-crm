@@ -81,7 +81,7 @@ export async function PATCH(request: Request): Promise<Response> {
   // index in migration 010 enforces the invariant.
   const { error } = await supabase
     .from('configuracion_tenant')
-    .update(updates)
+    .update(updates as never)
     .neq('id', '00000000-0000-0000-0000-000000000000');
 
   if (error) {

@@ -29,6 +29,7 @@ hierarchy, and acceptance criteria.
 | 8 | [`phase-8-ui-polish.md`](./phase-8-ui-polish.md) | Loading skeletons, error boundary, not-found page | IMPLEMENTED |
 | 9 | [`phase-9-empresa-task-calendar.md`](./phase-9-empresa-task-calendar.md) | Empresa task calendar widget | IMPLEMENTED |
 | 10 | [`phase-10-multi-instance.md`](./phase-10-multi-instance.md) | Multi-instance per-tenant install (branding, custom fields, feature flags) | DRAFT |
+| 11 | [`phase-11-ai-analytics.md`](./phase-11-ai-analytics.md) | AI data analytics + interactive visualization (SQL, charts, tables, citations) | IMPLEMENTED |
 | — | [`i18n.md`](./i18n.md) | Spanish-only UI rule + glossary + per-file translation status | Living |
 | — | [`user-guide.md`](./user-guide.md) | End-user feature guide and step-by-step test scenarios | Living |
 | — | [`seed.md`](./seed.md) | Seed system: date-relative anchoring, entity coverage, helpers, test-user starting state | Living |

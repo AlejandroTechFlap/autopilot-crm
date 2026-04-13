@@ -4,12 +4,12 @@
 > `/home/john/Desktop/Projects/CRM/MVP - HTML y Playbook/Autopilot_CRM_Especificacion_Tecnica_Desarrollo.md`.
 > Status legend: **DONE** = implemented and tested · **PARTIAL** = some pieces missing · **MISSING** = not built yet.
 
-Last reviewed: 2026-04-08. Recent changes: `/mis-tareas` overdue TZ fix +
-shared task calendar panel mounted in the cockpit right sidebar (§16); seed
-overhaul — date-relative + full Phase 10 coverage (§15); Phase 10
-multi-instance per-tenant install (§14). Phase 9 empresa task calendar was
-shipped in the prior review; production readiness pass (CSP, rate limits,
-security.txt, health probe, logging audit) is documented in §13.
+Last reviewed: 2026-04-12. Recent changes: Vitest unit test suite — 269
+tests across 9 files (§18); Phase 11 AI data analytics + interactive
+visualization (§17); `/mis-tareas` overdue TZ fix + shared task calendar
+panel mounted in the cockpit right sidebar (§16); seed overhaul —
+date-relative + full Phase 10 coverage (§15); Phase 10 multi-instance
+per-tenant install (§14). Production readiness pass in §13.
 
 ## 1. Data model (16 tables)
 
@@ -304,3 +304,44 @@ calendar widget to also appear on `/mis-tareas`, above the Scripts card.
 | 4 | `empresa-task-calendar.tsx` refactored from 220→60 lines as a thin data-fetching wrapper around the shared panel. Public signature unchanged. | DONE |
 | 5 | `cockpit-client.tsx` adds a new "Calendario de tareas" card between KPIs and Scripts. Reuses the tasks from the existing `useTasks()` call — no additional network requests. | DONE |
 | 6 | Docs — this section, phase-9 spec updated with the shared-component note, CLAUDE.md status row annotated. | DONE |
+
+## 17. Phase 11 — AI Data Analytics & Interactive Visualization (2026-04-12, IMPLEMENTED)
+
+Extends the AI chat assistant with analytical SQL capabilities and inline
+interactive visualizations (charts, tables, data citations).
+
+| Part | Scope | Status |
+|------|-------|--------|
+| 1 | Spec doc `docs/phase-11-ai-analytics.md` — API contracts, widget types, security model, acceptance criteria. | DONE |
+| 2 | Migration `012_execute_readonly_query.sql` — Postgres RPC function (`SECURITY INVOKER`, 5s timeout, SELECT-only, system-schema blocklist, row limit 200). | DONE |
+| 3 | `sql-validator.ts` — TypeScript defense-in-depth SQL validation (forbidden keywords, blocked schemas, multi-statement check). | DONE |
+| 4 | `sql-query.ts` — `query_database` tool: validates SQL, calls RPC, returns `{ columns, rows, rowCount, truncated, sql, title }`. | DONE |
+| 5 | `presentation.ts` — `render_chart` + `render_table` presentation tools. Capture structured widgets for client rendering. | DONE |
+| 6 | `definitions.ts` — 3 new Gemini tool declarations (`query_database`, `render_chart`, `render_table`). | DONE |
+| 7 | `tools/index.ts` — Dispatch cases + widget accumulator + auto-citation for query_database results. | DONE |
+| 8 | `api/chat/route.ts` — Widget accumulation during tool-call loop, SSE payload `{ text, widgets? }`. | DONE |
+| 9 | `use-chat.ts` — Parse widgets from SSE response, attach to `ChatMessage`. | DONE |
+| 10 | UI components — `chat-chart.tsx` (Recharts bar/line/area/pie), `chat-table.tsx` (expandable rows), `chat-citation.tsx` (collapsible SQL pill), `chat-widget.tsx` (dispatcher). | DONE |
+| 11 | `chat-message.tsx` — Render widgets array below markdown text in assistant messages. | DONE |
+| 12 | System prompts — `schema.ts` updated with analytics tool docs + visualization rules. Role prompts (`vendedor.ts`, `direccion.ts`, `admin.ts`) updated with analytical query patterns. | DONE |
+| 13 | Types — `types.ts` with `ChartWidget`, `TableWidget`, `CitationWidget`, `Widget`, `ChatResponsePayload`. | DONE |
+
+## 18. Unit test suite — Vitest (2026-04-12, IMPLEMENTED)
+
+First automated test infrastructure. Vitest + 269 tests across 9 files covering
+all pure business logic modules. No mocking of Supabase/Next.js beyond a single
+`vi.mock` for `api-utils` import isolation.
+
+| File | Module | Tests | Key coverage |
+|------|--------|-------|--------------|
+| `sql-validator.test.ts` | `sql-validator.ts` | 49 | 21 forbidden keywords, 8 blocked schemas, injection attempts, LIMIT handling |
+| `formatting.test.ts` | `formatting.ts` | 26 | Currency/number locale, relative time, overdue TZ-safe logic |
+| `rate-limit.test.ts` | `rate-limit.ts` | 13 | Token bucket, window expiry, 429 response, clientIp extraction |
+| `api-utils.test.ts` | `api-utils.ts` | 4 | `jsonError` (isolated via `vi.mock`) |
+| `custom-fields.test.ts` | `custom-fields.ts` | 25 | Regex, mapTenantRow, isFeatureFlag, mapCampoRow |
+| `custom-fields-validate.test.ts` | `custom-fields.ts` | 25 | 5 field types × required/optional, sanitization, renderCampoValue |
+| `schemas.test.ts` | `schemas.ts` | 24 | CreateCampo/UpdateCampo Zod schemas, refine rules, strict mode |
+| `helpers.test.ts` | `helpers.ts` | 38 | clampLimit, buildFuzzyOr, parseRelativeDate (Spanish + accents) |
+| `presentation.test.ts` | `presentation.ts` | 34 | Chart/table schemas, render fns, isPresentationResult guard |
+
+Run: `npm test` (or `npx vitest run`). Config: `vitest.config.ts`.

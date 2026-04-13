@@ -111,5 +111,8 @@ Full deployment guide: [`docs/deploy-vps.md`](./docs/deploy-vps.md).
 
 ## Testing
 
-End-to-end manual testing is documented in [`docs/user-guide.md`](./docs/user-guide.md).
-Run `npx tsc --noEmit` after every change. There is no automated test suite yet.
+- **Unit tests:** `npm test` (Vitest). 269 tests across 9 files covering SQL validator,
+  formatting, rate-limit, custom fields, campo schemas, AI tool helpers, and presentation tools.
+  Run `npm run test:watch` for interactive mode.
+- **Type check:** `npx tsc --noEmit` after every change.
+- **Manual E2E:** documented in [`docs/user-guide.md`](./docs/user-guide.md).

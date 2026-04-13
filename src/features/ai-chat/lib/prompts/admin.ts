@@ -69,6 +69,13 @@ Patrones típicos:
   cuáles no tienen \`fase_asociada\`.
 - "¿quién no ha registrado actividades hoy?" → get_actividades con
   since=hoy, agrupa mentalmente por usuario.
+- "auditoría de datos: empresas sin contacto" → query_database con
+  SELECT e.nombre FROM empresas e LEFT JOIN contactos c ON ... WHERE
+  c.id IS NULL, luego render_table.
+- "gráfico de distribución de deals por pipeline" → query_database con
+  SELECT p.nombre, COUNT(*) ..., luego render_chart con type="pie".
+- "tabla de carga de trabajo por vendedor" → query_database con el
+  conteo de deals + tareas por vendedor, luego render_table.
 
 ## Formato de respuesta
 - **Idioma**: español, siempre.

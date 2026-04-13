@@ -38,15 +38,29 @@ import {
   GetKpisDireccionSchema,
 } from './kpis';
 import { getPipelinesFases } from './pipelines';
+import { queryDatabase, QueryDatabaseSchema } from './sql-query';
+import {
+  renderChart,
+  renderTable,
+  RenderChartSchema,
+  RenderTableSchema,
+} from './presentation';
+import type { Widget, CitationWidget } from '../../types';
+import type { QueryResult } from './sql-query';
 
 type Supabase = SupabaseClient<Database>;
 
 export interface ToolRegistry {
   declarations: typeof TOOL_DECLARATIONS;
   dispatch: (name: string, args: unknown) => Promise<unknown>;
+  /** Widgets accumulated during the tool-call loop (Phase 11). */
+  widgets: Widget[];
 }
 
 export function registerTools(user: ApiUser, supabase: Supabase): ToolRegistry {
+  /** Mutable array — presentation tools push widgets here. */
+  const widgets: Widget[] = [];
+
   const dispatch = async (name: string, args: unknown): Promise<unknown> => {
     try {
       switch (name) {
@@ -87,6 +101,41 @@ export function registerTools(user: ApiUser, supabase: Supabase): ToolRegistry {
           );
         case 'get_pipelines_fases':
           return await getPipelinesFases(supabase);
+
+        // -- Phase 11: Analytics tools ----------------------------------------
+
+        case 'query_database': {
+          const result = await queryDatabase(
+            QueryDatabaseSchema.parse(args ?? {}),
+            supabase,
+          );
+          // Auto-generate a citation widget for successful queries
+          if ('columns' in result) {
+            const qr = result as QueryResult;
+            const citation: CitationWidget = {
+              id: `cit_${Date.now()}`,
+              type: 'citation',
+              query: qr.sql,
+              rowCount: qr.rowCount,
+              title: qr.title,
+            };
+            widgets.push(citation);
+          }
+          return result;
+        }
+
+        case 'render_chart': {
+          const res = renderChart(RenderChartSchema.parse(args ?? {}));
+          widgets.push(res.widget);
+          return res.ack;
+        }
+
+        case 'render_table': {
+          const res = renderTable(RenderTableSchema.parse(args ?? {}));
+          widgets.push(res.widget);
+          return res.ack;
+        }
+
         default:
           return { error: `unknown tool: ${name}` };
       }
@@ -97,7 +146,7 @@ export function registerTools(user: ApiUser, supabase: Supabase): ToolRegistry {
     }
   };
 
-  return { declarations: TOOL_DECLARATIONS, dispatch };
+  return { declarations: TOOL_DECLARATIONS, dispatch, widgets };
 }
 
 export { TOOL_DECLARATIONS };

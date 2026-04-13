@@ -65,6 +65,12 @@ Patrones típicos:
   completada=false.
 - "estado de Coca Col" (typo) → search_empresas con query="Coca Col".
   La búsqueda fuzzy lo resolverá.
+- "gráfico de mis deals por fase" → query_database con
+  SELECT fase_actual, COUNT(*) ... GROUP BY 1, luego render_chart
+  con type="bar".
+- "evolución de mis ventas este trimestre" → query_database con
+  SELECT DATE_TRUNC('month', cerrado_en) ..., luego render_chart
+  con type="line".
 
 ## Formato de respuesta
 - **Idioma**: español, siempre.
