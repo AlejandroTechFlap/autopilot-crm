@@ -7,6 +7,7 @@ import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { buildFuzzyOrMulti, clampLimit } from './helpers';
+import { buildCite } from './citation';
 
 type Supabase = SupabaseClient<Database>;
 
@@ -51,5 +52,9 @@ export async function searchContactos(
 
   const { data, error } = await q;
   if (error) return { error: error.message };
-  return { contactos: data ?? [], count: data?.length ?? 0 };
+  const contactos = (data ?? []).map((c) => ({
+    ...c,
+    cite: buildCite('contacto', c.id, c.nombre_completo, c.empresa?.id ?? null),
+  }));
+  return { contactos, count: contactos.length };
 }

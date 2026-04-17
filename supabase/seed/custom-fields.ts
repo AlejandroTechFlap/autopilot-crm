@@ -35,6 +35,9 @@ export async function seedTenantConfig(supabase: SupabaseClient) {
       feat_admin_scripts: true,
       feat_notifications: true,
       feat_empresa_task_cal: true,
+      feat_ai_lead_capture: true,
+      feat_ai_next_action: true,
+      feat_ai_command_palette: true,
     })
     .not('id', 'is', null);
 

@@ -19,7 +19,7 @@ import {
 describe('constants', () => {
   it('MAX_LIMIT is 20', () => expect(MAX_LIMIT).toBe(20));
   it('DEFAULT_LIMIT is 10', () => expect(DEFAULT_LIMIT).toBe(10));
-  it('MAX_TURNS is 5', () => expect(MAX_TURNS).toBe(5));
+  it('MAX_TURNS is 8', () => expect(MAX_TURNS).toBe(8));
   it('MAX_SCRIPT_CONTENT is 5000', () => expect(MAX_SCRIPT_CONTENT).toBe(5000));
 });
 

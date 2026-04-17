@@ -34,7 +34,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/pipeline', label: 'Pipeline', icon: Kanban, roles: ['admin', 'direccion', 'vendedor'] },
+  { href: '/pipeline', label: 'Embudo', icon: Kanban, roles: ['admin', 'direccion', 'vendedor'] },
   { href: '/mis-tareas', label: 'Mis tareas', icon: ListTodo, roles: ['admin', 'direccion', 'vendedor'] },
   { href: '/empresas', label: 'Empresas', icon: Building2, roles: ['admin', 'direccion', 'vendedor'] },
   { href: '/contactos', label: 'Contactos', icon: Users, roles: ['admin', 'direccion', 'vendedor'] },

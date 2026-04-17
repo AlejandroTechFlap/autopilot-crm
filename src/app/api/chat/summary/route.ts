@@ -148,14 +148,14 @@ async function buildBriefingPrompt(
     return `Eres el coach de ventas de AutopilotCRM. Genera un briefing matutino para el vendedor ${userName}.
 
 Datos REALES de su cartera (úsalos textualmente, no los inventes):
-- Negocios abiertos: ${kpis.deals_abiertos} (valor del pipeline: ${fmtEur(kpis.valor_pipeline)})
+- Negocios abiertos: ${kpis.deals_abiertos} (valor del embudo: ${fmtEur(kpis.valor_pipeline)})
 - Tareas pendientes: ${kpis.tareas_pendientes} (de las cuales ${kpis.tareas_vencidas} VENCIDAS)
 - Actividades registradas hoy: ${kpis.actividades_hoy}
 - Negocios ganados este mes: ${kpis.deals_ganados_mes} (${fmtEur(kpis.valor_ganado_mes)})
 - Comisión generada este mes: ${fmtEur(kpis.comision_mes)}
 
 Redacta un briefing de 3-5 viñetas en MARKDOWN cubriendo:
-1. Estado del pipeline personal en una línea
+1. Estado del embudo personal en una línea
 2. Lo más urgente (tareas vencidas, deals que merecen atención HOY)
 3. Una recomendación concreta y accionable para el día
 
@@ -167,7 +167,7 @@ Tono cercano, motivador pero honesto. Tutea. Máximo 150 palabras. Responde SIEM
     const topVendedores = [...por_vendedor]
       .sort((a, b) => b.deals_ganados - a.deals_ganados)
       .slice(0, 3)
-      .map((v) => `${v.vendedor.nombre} (${v.deals_ganados} ganados, ${fmtEur(v.valor_pipeline)} en pipeline)`)
+      .map((v) => `${v.vendedor.nombre} (${v.deals_ganados} ganados, ${fmtEur(v.valor_pipeline)} en embudo)`)
       .join('; ');
 
     const roleLabel = user.rol === 'direccion' ? 'la dirección comercial' : 'el administrador';
@@ -175,7 +175,7 @@ Tono cercano, motivador pero honesto. Tutea. Máximo 150 palabras. Responde SIEM
     return `Eres el coach de desempeño de AutopilotCRM. Genera un briefing matutino para ${roleLabel} (${userName}).
 
 Datos REALES del EQUIPO este mes (úsalos textualmente, son cifras de equipo, NO personales):
-- Pipeline total del equipo: ${fmtEur(kpis.total_pipeline_value)} en ${kpis.deals_abiertos} negocios abiertos
+- Embudo total del equipo: ${fmtEur(kpis.total_pipeline_value)} en ${kpis.deals_abiertos} negocios abiertos
 - Cerrados este mes: ${kpis.deals_ganados} ganados (${fmtEur(kpis.valor_ganado)}) vs ${kpis.deals_perdidos} perdidos
 - Tasa de conversión del equipo: ${kpis.tasa_conversion}%
 - Ticket medio: ${fmtEur(kpis.ticket_medio)}

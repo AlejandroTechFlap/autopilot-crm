@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error || !pipeline) {
-    return jsonError('Failed to create pipeline: ' + (error?.message ?? 'unknown'));
+    return jsonError('No se ha podido crear el embudo: ' + (error?.message ?? 'desconocido'));
   }
 
   // Seed two phases so invariant B3 (initial + final phase always exist)
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   ]);
 
   if (fasesError) {
-    return jsonError('Pipeline created but seed phases failed: ' + fasesError.message);
+    return jsonError('Embudo creado, pero las fases iniciales han fallado: ' + fasesError.message);
   }
 
   return Response.json({ pipeline }, { status: 201 });

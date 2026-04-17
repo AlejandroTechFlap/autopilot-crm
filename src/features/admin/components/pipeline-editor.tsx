@@ -86,12 +86,12 @@ export function PipelineEditor() {
           body: JSON.stringify({ nombre }),
         });
         if (!res.ok) throw new Error(await readError(res));
-        toast.success('Pipeline creado');
+        toast.success('Embudo creado');
         setShowCreate(false);
         await load();
         router.refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'No se ha podido crear el pipeline');
+        toast.error(err instanceof Error ? err.message : 'No se ha podido crear el embudo');
       } finally {
         setCreating(false);
       }
@@ -116,7 +116,7 @@ export function PipelineEditor() {
             onValueChange={(v) => setSelectedId(v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecciona un pipeline" />
+              <SelectValue placeholder="Selecciona un embudo" />
             </SelectTrigger>
             <SelectContent>
               {pipelines.map((p) => (
@@ -133,13 +133,13 @@ export function PipelineEditor() {
           className="gap-1.5"
           onClick={() => setShowCreate(true)}
         >
-          <Plus className="h-4 w-4" /> Nuevo pipeline
+          <Plus className="h-4 w-4" /> Nuevo embudo
         </Button>
 
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle>Nuevo pipeline</DialogTitle>
+              <DialogTitle>Nuevo embudo</DialogTitle>
             </DialogHeader>
             <form onSubmit={createPipeline} className="space-y-4">
               <div className="space-y-1">
@@ -171,7 +171,7 @@ export function PipelineEditor() {
       ) : (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Aún no hay pipelines. Pulsa «Nuevo pipeline» para crear uno.
+            Aún no hay embudos. Pulsa «Nuevo embudo» para crear uno.
           </CardContent>
         </Card>
       )}

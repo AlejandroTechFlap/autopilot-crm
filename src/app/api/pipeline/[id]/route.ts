@@ -22,7 +22,7 @@ export async function GET(
     .single();
 
   if (pipelineError || !pipeline) {
-    return jsonError('Pipeline not found', 404);
+    return jsonError('Embudo no encontrado', 404);
   }
 
   // Fetch phases ordered
@@ -33,7 +33,7 @@ export async function GET(
     .order('orden');
 
   if (!fases) {
-    return jsonError('Failed to load phases', 500);
+    return jsonError('No se han podido cargar las fases', 500);
   }
 
   // Fetch open deals (not closed) for this pipeline
@@ -54,7 +54,7 @@ export async function GET(
   const { data: deals, error: dealsError } = await dealsQuery;
 
   if (dealsError) {
-    return jsonError('Failed to load deals', 500);
+    return jsonError('No se han podido cargar las oportunidades', 500);
   }
 
   // Defensive filter — drop any deal whose joined empresa came back null.

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { buildFuzzyOr, clampLimit, todayStartIso } from './helpers';
+import { buildCite } from './citation';
 
 type Supabase = SupabaseClient<Database>;
 
@@ -63,5 +64,9 @@ export async function searchTareas(input: SearchTareasInput, supabase: Supabase)
 
   const { data, error } = await q;
   if (error) return { error: error.message };
-  return { tareas: data ?? [], count: data?.length ?? 0 };
+  const tareas = (data ?? []).map((t) => ({
+    ...t,
+    cite: buildCite('tarea', t.id, t.titulo, t.empresa?.id ?? null),
+  }));
+  return { tareas, count: tareas.length };
 }

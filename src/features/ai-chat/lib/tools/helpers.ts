@@ -14,8 +14,15 @@ export const MAX_LIMIT = 20;
 /** Default limit when the model omits it. */
 export const DEFAULT_LIMIT = 10;
 
-/** Maximum number of tool-call turns per user message. */
-export const MAX_TURNS = 5;
+/**
+ * Maximum number of tool-call turns per user message.
+ *
+ * Sized for Phase 11 analytics flows: a typical dirección question can chain
+ * `get_kpis_direccion` → `query_database` → `render_chart` → `render_table`
+ * plus 1–3 SQL retries before producing the final text. 8 leaves room for that
+ * pattern; HubSpot Breeze and Salesforce Agentforce use comparable budgets.
+ */
+export const MAX_TURNS = 8;
 
 /** Cap on script `contenido` length returned by `get_script` (chars). */
 export const MAX_SCRIPT_CONTENT = 5000;

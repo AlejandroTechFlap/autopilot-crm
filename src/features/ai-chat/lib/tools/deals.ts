@@ -13,6 +13,7 @@ import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { clampLimit } from './helpers';
+import { buildCite } from './citation';
 
 type Supabase = SupabaseClient<Database>;
 
@@ -89,7 +90,16 @@ export async function searchDeals(input: SearchDealsInput, supabase: Supabase) {
     );
   }
 
-  return { deals, count: deals.length };
+  const dealsWithCite = deals.map((d) => ({
+    ...d,
+    cite: buildCite(
+      'deal',
+      d.id,
+      d.empresa?.nombre ? `${d.empresa.nombre} · deal` : 'deal',
+      d.empresa?.id ?? null,
+    ),
+  }));
+  return { deals: dealsWithCite, count: dealsWithCite.length };
 }
 
 export async function getDeal(input: GetDealInput, supabase: Supabase) {
@@ -127,8 +137,22 @@ export async function getDeal(input: GetDealInput, supabase: Supabase) {
     .order('created_at', { ascending: false })
     .limit(10);
 
+  const empresaId = deal.empresa?.id ?? null;
+  const dealWithCite = {
+    ...deal,
+    cite: buildCite(
+      'deal',
+      deal.id,
+      deal.empresa?.nombre ? `${deal.empresa.nombre} · deal` : 'deal',
+      empresaId,
+    ),
+  };
+  const actividades_recientes = (actividades ?? []).map((a) => ({
+    ...a,
+    cite: buildCite('actividad', a.id, a.tipo, empresaId),
+  }));
   return {
-    deal,
-    actividades_recientes: actividades ?? [],
+    deal: dealWithCite,
+    actividades_recientes,
   };
 }

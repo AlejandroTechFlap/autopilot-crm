@@ -2,6 +2,7 @@
 
 import { toast } from 'sonner';
 import { isOverdueDate } from '@/lib/formatting';
+import { CollapsibleSection } from './collapsible-section';
 import { TaskCard } from './task-card';
 import type { Task } from '../types';
 
@@ -47,39 +48,43 @@ export function TaskList({ tasks, loading, onComplete }: TaskListProps) {
   return (
     <div className="space-y-6">
       {overdue.length > 0 && (
-        <TaskSection title="Vencidas" count={overdue.length} tasks={overdue} onComplete={handleComplete} />
+        <CollapsibleSection
+          storageKey="list-vencidas"
+          title="Vencidas"
+          count={overdue.length}
+          tone="danger"
+          defaultOpen={false}
+        >
+          {overdue.map((t) => (
+            <TaskCard key={t.id} task={t} onComplete={handleComplete} />
+          ))}
+        </CollapsibleSection>
       )}
       {alta.length > 0 && (
-        <TaskSection title="Prioridad alta" count={alta.length} tasks={alta} onComplete={handleComplete} />
+        <CollapsibleSection
+          storageKey="list-alta"
+          title="Prioridad alta"
+          count={alta.length}
+          defaultOpen
+        >
+          {alta.map((t) => (
+            <TaskCard key={t.id} task={t} onComplete={handleComplete} />
+          ))}
+        </CollapsibleSection>
       )}
       {normal.length > 0 && (
-        <TaskSection title="Otras" count={normal.length} tasks={normal} onComplete={handleComplete} />
+        <CollapsibleSection
+          storageKey="list-otras"
+          title="Otras"
+          count={normal.length}
+          tone="muted"
+          defaultOpen
+        >
+          {normal.map((t) => (
+            <TaskCard key={t.id} task={t} onComplete={handleComplete} />
+          ))}
+        </CollapsibleSection>
       )}
-    </div>
-  );
-}
-
-function TaskSection({
-  title,
-  count,
-  tasks,
-  onComplete,
-}: {
-  title: string;
-  count: number;
-  tasks: Task[];
-  onComplete: (taskId: string) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <h3 className="text-xs font-medium uppercase text-muted-foreground">
-        {title} ({count})
-      </h3>
-      <div className="space-y-2">
-        {tasks.map((t) => (
-          <TaskCard key={t.id} task={t} onComplete={onComplete} />
-        ))}
-      </div>
     </div>
   );
 }

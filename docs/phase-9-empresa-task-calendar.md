@@ -11,6 +11,16 @@
 > cockpit reuses the tasks already fetched by `useTasks()` — no extra
 > network calls. `EmpresaTaskCalendar` is now a thin data wrapper around
 > the shared panel.
+>
+> **2026-04-16 update:** on `/mis-tareas` the calendar moved out of the
+> right sidebar and into a `Lista | Calendario` tab toggle in the main area
+> (`cockpit-client.tsx`). Rationale: the prior layout rendered the same
+> `useTasks()` data twice (list + calendar) which is redundant per CRM UX
+> norms (HubSpot, Capsule, monday.com all use a single view with a
+> toggle). **Default tab is `Calendario` for all roles** — calendar-first
+> matches the request to land directly on the month view; list stays one
+> click away. The `/empresa/[id]` mount is unchanged — tasks there have
+> no competing list view so the sidebar placement is still correct.
 
 ## Overview
 

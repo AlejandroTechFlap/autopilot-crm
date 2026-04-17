@@ -40,7 +40,7 @@ defines: 6 modules, 6 screens, **42 features**, 3 roles, 18 admin-configurable r
 | Migrations | Supabase CLI | `supabase migration new` / `db push` / `gen types` |
 | Auth | Supabase Auth (JWT + RLS) | No custom middleware |
 | Realtime | Supabase Realtime | Live pipeline updates via WebSocket |
-| AI | `@anthropic-ai/sdk` | Conversational assistant + morning summaries |
+| AI | `@google/genai` (Google Gemini) | Conversational assistant + morning summaries |
 | Drag & Drop | `@dnd-kit` | Modern replacement for react-beautiful-dnd |
 | Charts | Recharts | KPI tiles, sparklines, historical charts |
 | Validation | Zod | Runtime validation on API inputs + form data |

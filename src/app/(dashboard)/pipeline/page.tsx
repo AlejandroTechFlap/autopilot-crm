@@ -18,7 +18,7 @@ export default async function PipelinePage() {
   if (!pipeline) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        No se encontró ningún pipeline. Ejecuta el script de seed.
+        No se encontró ningún embudo. Ejecuta el script de seed.
       </div>
     );
   }

@@ -234,21 +234,34 @@ Split across two files to honor the 300-line module rule.
 ```
 MisTareasPage (server)
 └── CockpitClient (client)
-    ├── CockpitToolbar
-    │   ├── CreateTaskModal
-    │   └── Filter buttons (all / overdue / today)
-    ├── TaskList (main area)
-    │   ├── TaskSection (urgent — vencidas)
-    │   │   └── TaskCard[]
-    │   ├── TaskSection (high priority — alta)
-    │   │   └── TaskCard[]
-    │   └── TaskSection (normal — media/baja)
-    │       └── TaskCard[]
-    └── CockpitSidebar (right panel)
-        ├── PersonalKpis (mini KPI cards)
-        ├── CommissionBox (monthly commission)
-        └── ScriptLibrary (expandable scripts)
+    ├── Tabs — Lista | Calendario | Todas (default: Calendario)
+    │   ├── TaskList (Lista)
+    │   │   ├── CollapsibleSection Vencidas (default closed, tone="danger")
+    │   │   ├── CollapsibleSection Prioridad alta (default open)
+    │   │   └── CollapsibleSection Otras (default open, tone="muted")
+    │   ├── TaskCalendarPanel (Calendario)
+    │   │   ├── Month calendar with task dots
+    │   │   ├── Selected-day list
+    │   │   ├── CollapsibleSection Vencidas (default closed)
+    │   │   └── CollapsibleSection Sin fecha (default closed)
+    │   └── TaskAllView (Todas)
+    │       ├── TaskFilters — search · estado · prioridad · empresa
+    │       └── Flat TaskCard list sorted by due date, count pill "N de M"
+    └── Right sidebar
+        ├── PersonalKpis / TeamKpisCompact
+        └── ScriptLibrary
 ```
+
+**Collapsible sections** use `CollapsibleSection` (chevron header, persists
+open/closed per `storageKey` in `localStorage` — pattern from Linear / Notion /
+HubSpot task inboxes). The `Vencidas` / `Sin fecha` buckets default to
+**closed** so long lists stop dominating the viewport; user override survives
+navigation.
+
+**Todas tab** — HubSpot "All tasks" + Linear filter bar pattern. Search
+matches titulo/descripcion/empresa; estado supports `vencidas` / `hoy` /
+`próximas` / `sin-fecha`; prioridad mirrors the enum; empresa is derived from
+tasks' own empresa links.
 
 ### TaskCard
 

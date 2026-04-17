@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -63,16 +64,26 @@ export function ChatMarkdown({ children }: ChatMarkdownProps) {
         h3: ({ children }) => (
           <h3 className="mt-3 mb-2 text-sm font-semibold">{children}</h3>
         ),
-        a: ({ href, children }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            className="underline underline-offset-2"
-          >
-            {children}
-          </a>
-        ),
+        a: ({ href, children }) => {
+          const isInternal = typeof href === 'string' && href.startsWith('/');
+          if (isInternal) {
+            return (
+              <Link href={href} className="underline underline-offset-2">
+                {children}
+              </Link>
+            );
+          }
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2"
+            >
+              {children}
+            </a>
+          );
+        },
         blockquote: ({ children }) => (
           <blockquote className="my-2 border-l-2 border-muted-foreground/30 pl-3 italic">
             {children}

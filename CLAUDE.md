@@ -16,7 +16,7 @@
 - **shadcn/ui** components in `src/components/ui/` — built on **base-ui** (not Radix).
   `Dialog` is controlled via `open`/`onOpenChange` state, NOT `DialogTrigger render`.
 - **Tailwind v4**, **sonner** toasts, **lucide-react** icons, **zod** validation.
-- **Anthropic SDK** for the AI chat panel and morning summary.
+- **Google Gemini SDK** (`@google/genai`) for the AI chat panel and morning summary.
 
 ## Document-first workflow
 
@@ -36,7 +36,7 @@ writing code, mark `[DRAFT]`, implement, then mark `[IMPLEMENTED]`.
 | 6 | Cmd+K palette, polish, Docker deploy | IMPLEMENTED |
 | 7 | Admin suite (pipelines, scripts, users, notifications, KPIs) | IMPLEMENTED |
 | 8 | UI/UX polish (loading skeletons, error boundary, not-found page) | IMPLEMENTED |
-| 9 | Empresa task calendar widget (also mounted on `/mis-tareas` sidebar 2026-04-08) | IMPLEMENTED |
+| 9 | Empresa task calendar widget (on `/mis-tareas`: migrated sidebar→`Lista\|Calendario` tab 2026-04-16) | IMPLEMENTED |
 | 10 | Multi-instance per-tenant install (branding, custom fields, feature flags) | IMPLEMENTED |
 | 11 | AI data analytics + interactive visualization (SQL queries, charts, tables, citations) | IMPLEMENTED |
 | — | Spanish-only UI sweep + glossary (`docs/i18n.md`) | IMPLEMENTED |

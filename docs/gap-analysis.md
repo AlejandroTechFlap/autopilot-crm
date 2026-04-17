@@ -345,3 +345,17 @@ all pure business logic modules. No mocking of Supabase/Next.js beyond a single
 | `presentation.test.ts` | `presentation.ts` | 34 | Chart/table schemas, render fns, isPresentationResult guard |
 
 Run: `npm test` (or `npx vitest run`). Config: `vitest.config.ts`.
+
+## 19. AI quick-wins — HubSpot Breeze + Agentforce patterns (2026-04-16, IMPLEMENTED)
+
+Five small-surface upgrades to the AI chat assistant. Full details in [`phase-5-ai-chat.md` §Quick-win upgrades](./phase-5-ai-chat.md); long-term roadmap in [`ai-roadmap.md`](./ai-roadmap.md).
+
+| Part | Scope | Status |
+|------|-------|--------|
+| 1 | Bug fix: preserve Gemini `thought_signature` verbatim across turns. `src/features/ai-chat/lib/turn.ts#extractModelTurn` + `api/chat/route.ts` refactor. | DONE |
+| 2 | Per-role tool declaration scoping — hide `get_kpis_direccion` from vendedor. `lib/tools/role-scope.ts`. | DONE |
+| 3 | Inline citations on every read-tool row. `lib/tools/citation.ts#buildCite` + empresas/deals/contactos/tareas/actividades patches + one-line instruction in each role prompt. | DONE |
+| 4 | Suggested prompts per role (3 chips each). `lib/suggested-prompts.ts` + empty-state in `ChatPanel`. | DONE |
+| 5 | Confirm-before-write scaffolding. `lib/tools/write-tool.ts` — no write tools exist yet, contract-only. | DONE |
+
+Deferred (items 6–11): observability log, trace view, weekly digest, resolution-rate metric, guardrails, topic classifier. See [`ai-roadmap.md`](./ai-roadmap.md).

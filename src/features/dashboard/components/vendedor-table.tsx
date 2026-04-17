@@ -24,7 +24,7 @@ export function VendedorTable({ data }: VendedorTableProps) {
         <TableRow>
           <TableHead>Vendedor</TableHead>
           <TableHead className="text-right">Oportunidades abiertas</TableHead>
-          <TableHead className="text-right">Valor del pipeline</TableHead>
+          <TableHead className="text-right">Valor del embudo</TableHead>
           <TableHead className="text-right">Ganadas</TableHead>
           <TableHead className="text-right">Actividades</TableHead>
         </TableRow>

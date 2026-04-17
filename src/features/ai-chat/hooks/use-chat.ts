@@ -17,6 +17,40 @@ interface UseChatReturn {
   clearMessages: () => void;
 }
 
+// ChatGPT-style progressive reveal. The server sends the full text in a
+// single SSE chunk (tool-loop architecture can't stream mid-loop), so we
+// animate the reveal client-side at ~1600 chars/sec. Abort-aware: if the
+// user clicks Limpiar mid-reveal, we snap to the end and exit.
+function typewriterReveal(
+  text: string,
+  onTick: (partial: string) => void,
+  signal: AbortSignal,
+  charsPerTick = 16,
+  tickMs = 10
+): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal.aborted || text.length === 0) {
+      onTick(text);
+      resolve();
+      return;
+    }
+    let i = 0;
+    const id = setInterval(() => {
+      if (signal.aborted) {
+        clearInterval(id);
+        resolve();
+        return;
+      }
+      i = Math.min(i + charsPerTick, text.length);
+      onTick(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(id);
+        resolve();
+      }
+    }, tickMs);
+  });
+}
+
 export function useChat(): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -67,7 +101,7 @@ export function useChat(): UseChatReturn {
       let assistantText = '';
       let assistantWidgets: Widget[] | undefined;
 
-      // Add empty assistant message that we'll update
+      // Push an empty assistant message — the skeleton renders while text === ''
       setMessages((prev) => [...prev, { role: 'model', text: '' }]);
 
       while (true) {
@@ -90,7 +124,6 @@ export function useChat(): UseChatReturn {
             } else if (parsed.text) {
               assistantText += parsed.text;
             }
-            // Phase 11: capture widgets from the response
             if (parsed.widgets && Array.isArray(parsed.widgets)) {
               assistantWidgets = parsed.widgets as Widget[];
             }
@@ -98,18 +131,38 @@ export function useChat(): UseChatReturn {
             // Skip malformed chunks
           }
         }
-
-        // Update the last message with accumulated text + widgets
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: 'model',
-            text: assistantText,
-            widgets: assistantWidgets,
-          };
-          return updated;
-        });
       }
+
+      // Progressive reveal (ChatGPT-style typewriter) once the full payload
+      // has arrived. Widgets attach only after the text is fully revealed so
+      // charts/tables don't pop in before their introduction.
+      await typewriterReveal(
+        assistantText,
+        (partial) => {
+          setMessages((prev) => {
+            if (prev.length === 0) return prev;
+            const last = prev[prev.length - 1];
+            if (last.role !== 'model') return prev;
+            const updated = [...prev];
+            updated[updated.length - 1] = { ...last, text: partial };
+            return updated;
+          });
+        },
+        abortRef.current.signal
+      );
+
+      setMessages((prev) => {
+        if (prev.length === 0) return prev;
+        const last = prev[prev.length - 1];
+        if (last.role !== 'model') return prev;
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          ...last,
+          text: assistantText,
+          widgets: assistantWidgets,
+        };
+        return updated;
+      });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         // User cancelled — do nothing

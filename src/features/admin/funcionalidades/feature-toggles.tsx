@@ -56,7 +56,7 @@ const FLAG_ROWS: FlagRow[] = [
   },
   {
     key: 'feat_dashboard_historico',
-    label: 'Histórico del dashboard',
+    label: 'Histórico del panel',
     description: 'Gráficos de evolución temporal y sparklines en el panel de dirección.',
   },
   {
@@ -78,6 +78,21 @@ const FLAG_ROWS: FlagRow[] = [
     key: 'feat_empresa_task_cal',
     label: 'Calendario de tareas por empresa',
     description: 'Widget de calendario con las tareas de cada empresa en su ficha.',
+  },
+  {
+    key: 'feat_ai_lead_capture',
+    label: 'Captura inteligente de leads (IA)',
+    description: 'Pegar texto en el formulario de creación y la IA extrae los campos.',
+  },
+  {
+    key: 'feat_ai_next_action',
+    label: 'Próxima mejor acción (IA)',
+    description: 'Tarjeta con la siguiente acción recomendada en empresas y oportunidades.',
+  },
+  {
+    key: 'feat_ai_command_palette',
+    label: 'Cmd+K conversacional (IA)',
+    description: 'Ejecutar acciones (crear tarea, registrar actividad…) con lenguaje natural.',
   },
 ];
 

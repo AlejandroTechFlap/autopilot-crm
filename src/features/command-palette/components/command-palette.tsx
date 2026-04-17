@@ -204,7 +204,7 @@ export function CommandPalette({
               <CommandGroup heading="Navegar">
                 <CommandItem onSelect={() => navigate('/pipeline')}>
                   <Columns3 className="h-4 w-4 text-muted-foreground" />
-                  <span>Pipeline</span>
+                  <span>Embudo</span>
                 </CommandItem>
                 <CommandItem onSelect={() => navigate('/mis-tareas')}>
                   <ListTodo className="h-4 w-4 text-muted-foreground" />

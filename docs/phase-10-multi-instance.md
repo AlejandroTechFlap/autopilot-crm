@@ -27,7 +27,7 @@ own brand + optional modules.
 
 | # | Item | Decided |
 |---|------|---------|
-| 1 | Bootstrap config (Supabase URL, Anthropic/Gemini keys) | **`.env.local` only**, set at install time — admin UI does NOT touch infra |
+| 1 | Bootstrap config (Supabase URL, Gemini key) | **`.env.local` only**, set at install time — admin UI does NOT touch infra |
 | 2 | Runtime branding (logo, colors, company info) | Editable from `/admin/branding`, stored in `configuracion_tenant` |
 | 3 | Custom fields on empresas / contactos / deals | Editable from `/admin/campos`, stored in `campos_personalizados` + JSONB column per entity |
 | 4 | Feature flags (optional modules) | Fixed catalog in `configuracion_tenant`, toggled from `/admin/funcionalidades` |

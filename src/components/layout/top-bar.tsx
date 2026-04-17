@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 const ROUTE_TITLES: Record<string, string> = {
-  '/pipeline': 'Pipeline',
+  '/pipeline': 'Embudo',
   '/mis-tareas': 'Mis tareas',
   '/empresas': 'Empresas',
   '/contactos': 'Contactos',

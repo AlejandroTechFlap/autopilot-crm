@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
+import { CollapsibleSection } from './collapsible-section';
 import { CreateTaskModal } from './create-task-modal';
 import { TaskCard } from './task-card';
 import type { Task } from '../types';
@@ -164,28 +165,34 @@ export function TaskCalendarPanel({
       </div>
 
       {overdueTasks.length > 0 && (
-        <div className="space-y-2 border-t pt-3">
-          <p className="text-xs font-medium text-danger">
-            Vencidas ({overdueTasks.length})
-          </p>
-          <div className="space-y-1.5">
+        <div className="border-t pt-3">
+          <CollapsibleSection
+            storageKey="calendar-vencidas"
+            title="Vencidas"
+            count={overdueTasks.length}
+            tone="danger"
+            defaultOpen={false}
+          >
             {overdueTasks.map((t) => (
               <TaskCard key={t.id} task={t} onComplete={handleComplete} />
             ))}
-          </div>
+          </CollapsibleSection>
         </div>
       )}
 
       {tasksWithoutDate.length > 0 && (
-        <div className="space-y-2 border-t pt-3">
-          <p className="text-xs font-medium text-muted-foreground">
-            Sin fecha ({tasksWithoutDate.length})
-          </p>
-          <div className="space-y-1.5">
+        <div className="border-t pt-3">
+          <CollapsibleSection
+            storageKey="calendar-sin-fecha"
+            title="Sin fecha"
+            count={tasksWithoutDate.length}
+            tone="muted"
+            defaultOpen={false}
+          >
             {tasksWithoutDate.map((t) => (
               <TaskCard key={t.id} task={t} onComplete={handleComplete} />
             ))}
-          </div>
+          </CollapsibleSection>
         </div>
       )}
 

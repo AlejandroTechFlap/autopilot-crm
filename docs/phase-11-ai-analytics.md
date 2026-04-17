@@ -204,6 +204,12 @@ src/features/ai-chat/
 | XSS prevention | Widget data sanitized (no raw HTML in labels) |
 | Zod validation | All tool inputs validated before execution |
 
+## Tool-call budget
+
+`MAX_TURNS` was raised from **5 → 8** in Phase 11 (`src/features/ai-chat/lib/tools/helpers.ts`). The previous budget assumed read-only flows (1 search + 1 follow-up + final text). Phase 11 prompts explicitly chain `get_kpis_* → query_database → render_chart → render_table → text` plus 1–3 SQL retries — that pattern needs ≥ 6 turns to land. 8 leaves headroom while staying conservative; HubSpot Breeze and Salesforce Agentforce use comparable budgets.
+
+If the loop still exhausts the budget, `route.ts` fires one **closing call without `tools`** (`runClosingCall` in `src/features/ai-chat/lib/turn.ts`) so the model is forced to summarise what it gathered. Telemetry: `event: 'turn_budget_exhausted'` then `event: 'closing_call_used'`. The "límite de análisis" string only ships when even the closing call returns nothing.
+
 ## Acceptance Criteria
 
 1. Vendedor: "muéstrame mis deals por fase" → bar chart appears in chat

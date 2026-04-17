@@ -37,7 +37,7 @@ export async function PATCH(
     .single();
 
   if (error || !data) {
-    return jsonError('Failed to update pipeline: ' + (error?.message ?? 'unknown'));
+    return jsonError('No se ha podido actualizar el embudo: ' + (error?.message ?? 'desconocido'));
   }
 
   return Response.json({ pipeline: data });
@@ -60,19 +60,19 @@ export async function DELETE(
     .eq('pipeline_id', id);
 
   if (countError) {
-    return jsonError('Failed to check pipeline usage: ' + countError.message);
+    return jsonError('No se ha podido verificar el uso del embudo: ' + countError.message);
   }
 
   if ((count ?? 0) > 0) {
     return jsonError(
-      `Cannot delete pipeline: ${count} deals still reference it`,
+      `No se puede eliminar el embudo: ${count} oportunidades siguen utilizándolo`,
       409
     );
   }
 
   const { error } = await supabase.from('pipelines').delete().eq('id', id);
   if (error) {
-    return jsonError('Failed to delete pipeline: ' + error.message);
+    return jsonError('No se ha podido eliminar el embudo: ' + error.message);
   }
 
   return Response.json({ ok: true });

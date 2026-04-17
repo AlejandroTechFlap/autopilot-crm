@@ -76,6 +76,30 @@ export type Database = {
           },
         ]
       }
+      ai_sugerencias_proxima_accion: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          fecha: string
+          generated_at: string
+          suggestion_json: Json
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          fecha: string
+          generated_at?: string
+          suggestion_json: Json
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          fecha?: string
+          generated_at?: string
+          suggestion_json?: Json
+        }
+        Relationships: []
+      }
       briefings_diarios: {
         Row: {
           contenido: string
@@ -198,6 +222,9 @@ export type Database = {
           feat_admin_kpis: boolean
           feat_admin_scripts: boolean
           feat_ai_chat: boolean
+          feat_ai_command_palette: boolean
+          feat_ai_lead_capture: boolean
+          feat_ai_next_action: boolean
           feat_command_palette: boolean
           feat_dashboard_historico: boolean
           feat_empresa_task_cal: boolean
@@ -218,6 +245,9 @@ export type Database = {
           feat_admin_kpis?: boolean
           feat_admin_scripts?: boolean
           feat_ai_chat?: boolean
+          feat_ai_command_palette?: boolean
+          feat_ai_lead_capture?: boolean
+          feat_ai_next_action?: boolean
           feat_command_palette?: boolean
           feat_dashboard_historico?: boolean
           feat_empresa_task_cal?: boolean
@@ -238,6 +268,9 @@ export type Database = {
           feat_admin_kpis?: boolean
           feat_admin_scripts?: boolean
           feat_ai_chat?: boolean
+          feat_ai_command_palette?: boolean
+          feat_ai_lead_capture?: boolean
+          feat_ai_next_action?: boolean
           feat_command_palette?: boolean
           feat_dashboard_historico?: boolean
           feat_empresa_task_cal?: boolean

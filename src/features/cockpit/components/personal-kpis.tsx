@@ -34,7 +34,7 @@ const KPI_ITEMS: {
   },
   {
     key: 'valor_pipeline',
-    label: 'Valor del pipeline',
+    label: 'Valor del embudo',
     icon: TrendingUp,
     format: (v) => formatCurrency(v),
   },

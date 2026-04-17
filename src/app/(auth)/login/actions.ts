@@ -15,14 +15,14 @@ export async function login(
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { error: 'Email and password are required' };
+    return { error: 'Introduce tu email y contraseña' };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: 'Invalid email or password' };
+    return { error: 'Email o contraseña incorrectos' };
   }
 
   redirect('/');

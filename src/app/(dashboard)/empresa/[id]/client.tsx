@@ -72,7 +72,7 @@ export function EmpresaDetailClient({
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver al pipeline
+        Volver al embudo
       </Link>
 
       {/* Header */}

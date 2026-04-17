@@ -20,7 +20,8 @@ Closes Task #51. Adds the cross-cutting UX primitives the build was missing:
 | `src/components/ui/skeletons/table-skeleton.tsx` | Generic table placeholder (rows × cols) | 30 |
 | `src/components/ui/skeletons/kanban-skeleton.tsx` | Kanban column placeholder | 35 |
 | `src/components/ui/skeletons/kpi-skeleton.tsx` | 5-tile KPI grid placeholder | 30 |
-| `src/app/(dashboard)/loading.tsx` | Default fallback (generic spinner card) | 15 |
+| `src/components/ui/skeletons/detail-skeleton.tsx` | Detail-page placeholder (header + 2-col grid) — matches `/empresa/[id]` | 55 |
+| `src/app/(dashboard)/loading.tsx` | Default fallback — page-shaped skeleton (title + card grid), Spanish aria label | 25 |
 | `src/app/(dashboard)/error.tsx` | Error boundary with reset | 35 |
 | `src/app/(dashboard)/not-found.tsx` | 404 friendly page | 20 |
 | `src/app/(dashboard)/pipeline/loading.tsx` | Kanban skeleton | 5 |
@@ -28,7 +29,8 @@ Closes Task #51. Adds the cross-cutting UX primitives the build was missing:
 | `src/app/(dashboard)/empresas/loading.tsx` | Table skeleton | 5 |
 | `src/app/(dashboard)/contactos/loading.tsx` | Table skeleton | 5 |
 | `src/app/(dashboard)/mis-tareas/loading.tsx` | Table skeleton | 5 |
-| `src/app/(dashboard)/admin/loading.tsx` | Card grid skeleton | 5 |
+| `src/app/(dashboard)/empresa/[id]/loading.tsx` | Detail skeleton (2026-04-16 addition — heaviest server fetch) | 5 |
+| `src/app/(dashboard)/admin/loading.tsx` | Card grid skeleton — parent covers all `/admin/*` children via Next.js Suspense walk-up | 5 |
 
 All files MUST use the existing `Skeleton` primitive from `src/components/ui/skeleton.tsx`.
 Client-side `error.tsx` must be a `'use client'` component per Next.js 16 conventions.

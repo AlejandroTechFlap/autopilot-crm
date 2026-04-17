@@ -36,6 +36,7 @@ import {
   registerTools,
   MAX_TURNS,
 } from '@/features/ai-chat/lib/gemini';
+import { extractModelTurn, runClosingCall } from '@/features/ai-chat/lib/turn';
 
 const SCOPE = 'api.chat';
 
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
     let finalText = '';
     let toolCallsTotal = 0;
     let turnsUsed = 0;
+    let finishedNaturally = false;
 
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       turnsUsed = turn + 1;
@@ -104,19 +106,29 @@ export async function POST(request: Request) {
 
       const calls = res.functionCalls ?? [];
 
+      // Gemini can emit text alongside function calls in the same turn.
+      // Capture it so it isn't lost if we exit via the budget-exhausted path.
+      if (res.text) finalText = res.text;
+
       if (calls.length === 0) {
-        finalText = res.text ?? '';
+        finishedNaturally = true;
         break;
       }
 
       toolCallsTotal += calls.length;
 
-      // Echo the model's function-call parts back into the history so the
-      // next turn knows what was asked.
-      contents.push({
-        role: 'model',
-        parts: calls.map((fc) => ({ functionCall: fc })),
-      });
+      // Preserves `thought_signature` on function-call parts; required by
+      // Gemini on the next turn or it returns INVALID_ARGUMENT.
+      const turnResult = extractModelTurn(res.candidates?.[0]?.content, calls);
+      if (turnResult.usedFallback) {
+        logger.warn({
+          scope: SCOPE,
+          event: 'missing_candidate_content',
+          userId: user.id,
+          turn,
+        });
+      }
+      contents.push(turnResult.content);
 
       // Execute every call in parallel — they're independent reads.
       const responseParts: Part[] = await Promise.all(
@@ -133,6 +145,41 @@ export async function POST(request: Request) {
       );
 
       contents.push({ role: 'user', parts: responseParts });
+    }
+
+    if (!finishedNaturally) {
+      // Loop hit MAX_TURNS without the model producing a "no more calls" turn.
+      // Fire one closing call WITHOUT tools so the model is forced to summarise
+      // whatever it gathered. Converts the dead-end into a degraded but useful
+      // answer instead of the generic "límite de análisis" wall.
+      logger.warn({
+        scope: SCOPE,
+        event: 'turn_budget_exhausted',
+        userId: user.id,
+        turnsUsed,
+        toolCallsTotal,
+      });
+      try {
+        const closingText = await runClosingCall(
+          (req) => ai.models.generateContent(req),
+          { model, systemPrompt, contents },
+        );
+        if (closingText) {
+          finalText = closingText;
+          logger.info({
+            scope: SCOPE,
+            event: 'closing_call_used',
+            userId: user.id,
+          });
+        }
+      } catch (err) {
+        logger.error({
+          scope: SCOPE,
+          event: 'closing_call_failed',
+          userId: user.id,
+          err,
+        });
+      }
     }
 
     if (!finalText) {

@@ -22,9 +22,11 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { FunctionDeclaration } from '@google/genai';
 import type { Database } from '@/types/database';
 import type { ApiUser } from '@/lib/api-utils';
 import { TOOL_DECLARATIONS } from './definitions';
+import { filterToolsForRole } from './role-scope';
 import { searchEmpresas, getEmpresa, SearchEmpresasSchema, GetEmpresaSchema } from './empresas';
 import { searchDeals, getDeal, SearchDealsSchema, GetDealSchema } from './deals';
 import { searchContactos, SearchContactosSchema } from './contactos';
@@ -51,7 +53,7 @@ import type { QueryResult } from './sql-query';
 type Supabase = SupabaseClient<Database>;
 
 export interface ToolRegistry {
-  declarations: typeof TOOL_DECLARATIONS;
+  declarations: FunctionDeclaration[];
   dispatch: (name: string, args: unknown) => Promise<unknown>;
   /** Widgets accumulated during the tool-call loop (Phase 11). */
   widgets: Widget[];
@@ -60,6 +62,10 @@ export interface ToolRegistry {
 export function registerTools(user: ApiUser, supabase: Supabase): ToolRegistry {
   /** Mutable array — presentation tools push widgets here. */
   const widgets: Widget[] = [];
+
+  // PoLP: hide tools the role cannot use. Defense-in-depth — the dispatch
+  // guard below + Postgres RLS still protect at runtime.
+  const declarations = filterToolsForRole(TOOL_DECLARATIONS, user.rol);
 
   const dispatch = async (name: string, args: unknown): Promise<unknown> => {
     try {
@@ -146,7 +152,7 @@ export function registerTools(user: ApiUser, supabase: Supabase): ToolRegistry {
     }
   };
 
-  return { declarations: TOOL_DECLARATIONS, dispatch, widgets };
+  return { declarations, dispatch, widgets };
 }
 
 export { TOOL_DECLARATIONS };

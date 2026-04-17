@@ -80,8 +80,8 @@ export const TOOL_DECLARATIONS: FunctionDeclaration[] = [
       type: Type.OBJECT,
       properties: {
         query: { type: Type.STRING, description: 'Parte del nombre de la empresa.' },
-        fase_id: { type: Type.STRING, description: 'UUID de la fase del pipeline.' },
-        pipeline_id: { type: Type.STRING, description: 'UUID del pipeline.' },
+        fase_id: { type: Type.STRING, description: 'UUID de la fase del embudo.' },
+        pipeline_id: { type: Type.STRING, description: 'UUID del embudo.' },
         resultado: {
           type: Type.STRING,
           enum: ['open', 'ganado', 'perdido'],
@@ -209,7 +209,7 @@ export const TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: 'get_kpis_vendedor',
     description:
-      'Devuelve los KPIs personales de un vendedor: pipeline, tareas pendientes/vencidas, actividades de hoy, deals ganados del mes, comisión del mes. Sin parámetros, devuelve los del usuario actual.',
+      'Devuelve los KPIs personales de un vendedor: embudo, tareas pendientes/vencidas, actividades de hoy, deals ganados del mes, comisión del mes. Sin parámetros, devuelve los del usuario actual.',
     parameters: {
       type: Type.OBJECT,
       properties: {
@@ -223,7 +223,7 @@ export const TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: 'get_kpis_direccion',
     description:
-      'Devuelve KPIs del equipo entero (solo para dirección/admin): pipeline total, deals abiertos, ganados/perdidos del periodo, tasa de conversión, ticket medio, actividades, tareas vencidas, y desglose por vendedor.',
+      'Devuelve KPIs del equipo entero (solo para dirección/admin): embudo total, deals abiertos, ganados/perdidos del periodo, tasa de conversión, ticket medio, actividades, tareas vencidas, y desglose por vendedor.',
     parameters: {
       type: Type.OBJECT,
       properties: {

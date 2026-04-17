@@ -33,7 +33,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">Autopilot CRM</h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to your account
+            Inicia sesión en tu cuenta
           </p>
         </CardHeader>
         <CardContent>
@@ -56,7 +56,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 name="password"
@@ -67,7 +67,7 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? 'Signing in...' : 'Sign in'}
+              {pending ? 'Iniciando sesión…' : 'Iniciar sesión'}
             </Button>
           </form>
         </CardContent>

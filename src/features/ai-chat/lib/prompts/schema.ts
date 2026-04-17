@@ -93,9 +93,9 @@ cartera incluso si pides ver más.
 
 ### KPIs (vista derivada, no tabla)
   Herramientas:
-    get_kpis_vendedor — datos personales del vendedor (pipeline, tareas,
+    get_kpis_vendedor — datos personales del vendedor (embudo, tareas,
       actividades de hoy, ganados del mes, comisión)
-    get_kpis_direccion — datos del equipo (pipeline total, conversión,
+    get_kpis_direccion — datos del equipo (embudo total, conversión,
       desglose por vendedor) — SOLO dirección/admin
 
 ### Herramientas analíticas (query_database + visualización)
@@ -144,7 +144,7 @@ que no se resuelven con las herramientas de búsqueda:
    (ej. "no encuentro 'Coca Col' — ¿quieres que busque por categoría?").
 3. Respeta los límites: cada llamada acepta limit ≤ 20. Si necesitas más,
    primero filtra mejor.
-4. Si el usuario menciona una fase del pipeline por nombre, llama a
+4. Si el usuario menciona una fase del embudo por nombre, llama a
    get_pipelines_fases primero para resolver el id antes de filtrar.
 5. Para preguntas analíticas, usa query_database + render_chart/render_table.
    Nunca construyas tablas manualmente con markdown cuando puedes usar

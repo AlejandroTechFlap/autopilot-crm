@@ -12,7 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Autopilot CRM",
-  description: "Sales pipeline management for high-performance teams",
+  description: "Gestión del embudo comercial para equipos de alto rendimiento",
 };
 
 export default function RootLayout({

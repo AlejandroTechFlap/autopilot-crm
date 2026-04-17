@@ -109,6 +109,7 @@ export function DashboardShell({ user, tenant, children }: DashboardShellProps) 
           open={chatOpen}
           onClose={closeChat}
           initialMessage={chatSeed}
+          rol={user.rol}
         />
       )}
     </div>

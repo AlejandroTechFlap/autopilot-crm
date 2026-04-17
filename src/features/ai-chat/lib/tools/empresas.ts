@@ -13,6 +13,7 @@ import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { buildFuzzyOr, clampLimit } from './helpers';
+import { buildCite } from './citation';
 
 type Supabase = SupabaseClient<Database>;
 
@@ -73,7 +74,11 @@ export async function searchEmpresas(input: SearchEmpresasInput, supabase: Supab
 
   const { data, error } = await q;
   if (error) return { error: error.message };
-  return { empresas: data ?? [], count: data?.length ?? 0 };
+  const empresas = (data ?? []).map((e) => ({
+    ...e,
+    cite: buildCite('empresa', e.id, e.nombre),
+  }));
+  return { empresas, count: empresas.length };
 }
 
 export async function getEmpresa(input: GetEmpresaInput, supabase: Supabase) {
@@ -134,10 +139,27 @@ export async function getEmpresa(input: GetEmpresaInput, supabase: Supabase) {
       .limit(5),
   ]);
 
+  const empresaWithCite = {
+    ...empresa,
+    cite: buildCite('empresa', empresa.id, empresa.nombre),
+  };
+  const contactos = (contactosRes.data ?? []).map((c) => ({
+    ...c,
+    cite: buildCite('contacto', c.id, c.nombre_completo, input.id),
+  }));
+  const deals_abiertos = (dealsRes.data ?? []).map((d) => ({
+    ...d,
+    cite: buildCite('deal', d.id, `${empresa.nombre} · deal`, input.id),
+  }));
+  const actividades_recientes = (actividadesRes.data ?? []).map((a) => ({
+    ...a,
+    cite: buildCite('actividad', a.id, a.tipo, input.id),
+  }));
+
   return {
-    empresa,
-    contactos: contactosRes.data ?? [],
-    deals_abiertos: dealsRes.data ?? [],
-    actividades_recientes: actividadesRes.data ?? [],
+    empresa: empresaWithCite,
+    contactos,
+    deals_abiertos,
+    actividades_recientes,
   };
 }

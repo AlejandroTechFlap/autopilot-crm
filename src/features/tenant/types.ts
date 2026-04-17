@@ -20,7 +20,10 @@ export type Entidad = Database['public']['Enums']['entidad_personalizable'];
 /** Five supported custom-field types. */
 export type TipoCampo = Database['public']['Enums']['tipo_campo_personalizado'];
 
-/** The eight feature flags shipped in v1 (see migration 010 + spec D4). */
+/**
+ * Feature flags catalog. v1 shipped 8 in migration 010; Phase 12 added 3 more
+ * (lead capture, próxima acción, command-palette IA) in migration 013.
+ */
 export const FEATURE_FLAGS = [
   'feat_ai_chat',
   'feat_morning_summary',
@@ -30,6 +33,9 @@ export const FEATURE_FLAGS = [
   'feat_admin_scripts',
   'feat_notifications',
   'feat_empresa_task_cal',
+  'feat_ai_lead_capture',
+  'feat_ai_next_action',
+  'feat_ai_command_palette',
 ] as const;
 
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];

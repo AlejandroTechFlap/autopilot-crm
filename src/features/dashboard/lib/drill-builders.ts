@@ -21,7 +21,7 @@ export async function buildPipelineValueDrill(db: Db): Promise<DrillData> {
     const fase = pickOne(r.fase);
     return {
       id: r.id,
-      primary: empresa?.nombre ?? 'Unknown',
+      primary: empresa?.nombre ?? 'Sin nombre',
       secondary: fase?.nombre ?? null,
       vendedor: vendedor?.nombre ?? null,
       valor: r.valor ?? 0,
@@ -34,17 +34,17 @@ export async function buildPipelineValueDrill(db: Db): Promise<DrillData> {
     const v = pickOne(r.vendedor);
     return {
       vendedor_id: v?.id ?? 'unknown',
-      vendedor_nombre: v?.nombre ?? 'Unknown',
+      vendedor_nombre: v?.nombre ?? 'Sin vendedor',
       valor: r.valor ?? 0,
     };
   });
 
   return {
-    title: 'Pipeline Value Breakdown',
+    title: 'Desglose del embudo',
     summary: [
-      { label: 'Total Pipeline', value: formatCurrency(total) },
-      { label: 'Open Deals', value: String(rows.length) },
-      { label: 'Avg. Deal', value: formatCurrency(Math.round(avg)) },
+      { label: 'Embudo total', value: formatCurrency(total) },
+      { label: 'Oportunidades abiertas', value: String(rows.length) },
+      { label: 'Ticket medio', value: formatCurrency(Math.round(avg)) },
     ],
     by_vendedor: aggregateByVendedor(byVendRows),
     items,
@@ -73,8 +73,8 @@ export async function buildDealsGanadosDrill(
     const vendedor = pickOne(r.vendedor);
     return {
       id: r.id,
-      primary: empresa?.nombre ?? 'Unknown',
-      secondary: 'Won',
+      primary: empresa?.nombre ?? 'Sin nombre',
+      secondary: 'Ganado',
       vendedor: vendedor?.nombre ?? null,
       valor: r.valor ?? 0,
       date: r.cerrado_en,
@@ -86,17 +86,17 @@ export async function buildDealsGanadosDrill(
     const v = pickOne(r.vendedor);
     return {
       vendedor_id: v?.id ?? 'unknown',
-      vendedor_nombre: v?.nombre ?? 'Unknown',
+      vendedor_nombre: v?.nombre ?? 'Sin vendedor',
       valor: r.valor ?? 0,
     };
   });
 
   return {
-    title: 'Deals Won Breakdown',
+    title: 'Desglose de ganados',
     summary: [
-      { label: 'Won', value: String(rows.length) },
-      { label: 'Total Value', value: formatCurrency(total) },
-      { label: 'Avg. Ticket', value: formatCurrency(Math.round(avg)) },
+      { label: 'Ganados', value: String(rows.length) },
+      { label: 'Valor total', value: formatCurrency(total) },
+      { label: 'Ticket medio', value: formatCurrency(Math.round(avg)) },
     ],
     by_vendedor: aggregateByVendedor(byVendRows),
     items,
@@ -158,8 +158,8 @@ export async function buildConversionDrill(
     const vendedor = pickOne(r.vendedor);
     return {
       id: r.id,
-      primary: empresa?.nombre ?? 'Unknown',
-      secondary: r.motivo_perdida ?? 'No reason recorded',
+      primary: empresa?.nombre ?? 'Sin nombre',
+      secondary: r.motivo_perdida ?? 'Sin motivo registrado',
       vendedor: vendedor?.nombre ?? null,
       valor: r.valor ?? 0,
       date: r.cerrado_en,
@@ -168,11 +168,11 @@ export async function buildConversionDrill(
   });
 
   return {
-    title: 'Conversion Breakdown',
+    title: 'Desglose de conversión',
     summary: [
-      { label: 'Won', value: String(won.length) },
-      { label: 'Lost', value: String(lost.length) },
-      { label: 'Conversion', value: `${Math.round(rate * 10) / 10}%` },
+      { label: 'Ganados', value: String(won.length) },
+      { label: 'Perdidos', value: String(lost.length) },
+      { label: 'Conversión', value: `${Math.round(rate * 10) / 10}%` },
     ],
     by_vendedor,
     items,
@@ -195,11 +195,11 @@ export async function buildTicketMedioDrill(
 
   return {
     ...drill,
-    title: 'Average Ticket Breakdown',
+    title: 'Desglose del ticket medio',
     summary: [
-      { label: 'Avg.', value: formatCurrency(avg) },
-      { label: 'Max', value: formatCurrency(max) },
-      { label: 'Min', value: formatCurrency(min) },
+      { label: 'Medio', value: formatCurrency(avg) },
+      { label: 'Máximo', value: formatCurrency(max) },
+      { label: 'Mínimo', value: formatCurrency(min) },
     ],
   };
 }
@@ -234,8 +234,8 @@ export async function buildOverdueTasksDrill(db: Db): Promise<DrillData> {
       id: r.id,
       primary: r.titulo,
       secondary: empresa?.nombre
-        ? `${empresa.nombre} · ${daysOverdue}d overdue`
-        : `${daysOverdue}d overdue`,
+        ? `${empresa.nombre} · ${daysOverdue}d de retraso`
+        : `${daysOverdue}d de retraso`,
       vendedor: vendedor?.nombre ?? null,
       valor: null,
       date: r.fecha_vencimiento,
@@ -260,8 +260,8 @@ export async function buildOverdueTasksDrill(db: Db): Promise<DrillData> {
   }
 
   return {
-    title: 'Overdue Tasks Breakdown',
-    summary: [{ label: 'Overdue', value: String(rows.length) }],
+    title: 'Desglose de tareas vencidas',
+    summary: [{ label: 'Vencidas', value: String(rows.length) }],
     by_vendedor: Array.from(byVendor.values()).sort((a, b) => b.count - a.count),
     items,
   };

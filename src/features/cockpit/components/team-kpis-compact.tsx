@@ -58,7 +58,7 @@ export function TeamKpisCompact() {
   const items = [
     {
       key: 'pipeline',
-      label: 'Pipeline total',
+      label: 'Embudo total',
       icon: TrendingUp,
       value: formatCurrency(kpis.total_pipeline_value),
       delta: null,

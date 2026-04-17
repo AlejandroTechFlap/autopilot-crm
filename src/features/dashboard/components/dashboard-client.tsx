@@ -37,7 +37,7 @@ export function DashboardClient() {
     <div className="space-y-6">
       {/* Period selector */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Dashboard</h2>
+        <h2 className="text-lg font-semibold">Panel</h2>
         <div className="flex gap-1">
           {PERIODOS.map((p) => (
             <Button
@@ -59,7 +59,7 @@ export function DashboardClient() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <KpiTile
-              label="Valor del pipeline"
+              label="Valor del embudo"
               value={formatCurrency(data.kpis.total_pipeline_value)}
               sparklineData={pipelineSpark}
               onClick={() => setDrillTipo('pipeline_value')}
@@ -95,7 +95,7 @@ export function DashboardClient() {
           {historicoEnabled && (
             <div className="grid gap-4 sm:grid-cols-2">
               <ChartCard
-                title="Valor del pipeline"
+                title="Valor del embudo"
                 tipo="pipeline_value"
                 periodo={periodo}
                 variant="area"
@@ -136,7 +136,7 @@ export function DashboardClient() {
           </Card>
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">No se han podido cargar los datos del dashboard.</p>
+        <p className="text-sm text-muted-foreground">No se han podido cargar los datos del panel.</p>
       )}
 
       <KpiDrillDialog

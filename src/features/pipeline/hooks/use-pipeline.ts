@@ -34,7 +34,7 @@ export function usePipeline(pipelineId: string): UsePipelineResult {
       setData(json);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load pipeline');
+      setError(err instanceof Error ? err.message : 'No se ha podido cargar el embudo');
     } finally {
       setLoading(false);
     }

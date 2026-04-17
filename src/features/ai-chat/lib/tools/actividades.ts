@@ -8,6 +8,7 @@ import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { clampLimit } from './helpers';
+import { buildCite } from './citation';
 
 type Supabase = SupabaseClient<Database>;
 
@@ -54,5 +55,9 @@ export async function getActividades(
 
   const { data, error } = await q;
   if (error) return { error: error.message };
-  return { actividades: data ?? [], count: data?.length ?? 0 };
+  const actividades = (data ?? []).map((a) => ({
+    ...a,
+    cite: buildCite('actividad', a.id, a.tipo, a.empresa?.id ?? null),
+  }));
+  return { actividades, count: actividades.length };
 }

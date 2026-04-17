@@ -15,7 +15,7 @@ export default function DashboardNotFound() {
           href="/pipeline"
           className="mt-2 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          Volver al pipeline
+          Volver al embudo
         </Link>
       </CardContent>
     </Card>
