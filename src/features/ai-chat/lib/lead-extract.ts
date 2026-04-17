@@ -103,7 +103,7 @@ Reglas estrictas:
 - "email" debe ser un email válido o se omite.
 - "telefono" mantén el formato del texto (no normalices).
 - Las preguntas deben ser conversacionales y breves ("¿Cuál es el email de contacto?", "¿Qué valor estimado le ponemos?").
-- Devuelve SOLO el JSON. Sin texto adicional, sin markdown, sin "```json".
+- Devuelve SOLO el JSON. Sin texto adicional, sin markdown, sin bloques de código.
 ${known}
 TEXTO:
 """

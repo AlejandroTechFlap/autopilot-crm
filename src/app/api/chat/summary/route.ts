@@ -23,6 +23,10 @@ import { createClient } from '@/lib/supabase/server';
 import { assertFeatureFlag } from '@/features/tenant/lib/feature-flag-guard';
 import { getClient, getModel, buildRoleContext } from '@/features/ai-chat/lib/gemini';
 import { getKpisVendedor, getKpisDireccion } from '@/features/ai-chat/lib/tools/kpis';
+import {
+  generateWithRetry,
+  mapGeminiErrorToUserMessage,
+} from '@/features/ai-chat/lib/retry';
 
 const SCOPE = 'api.chat.summary';
 
@@ -76,14 +80,27 @@ export async function GET(request: NextRequest) {
 
     const prompt = await buildBriefingPrompt(user, ctx.userName, supabase);
 
-    const response = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: {
-        maxOutputTokens: 512,
-        temperature: 0.6,
+    const response = await generateWithRetry(
+      () =>
+        ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            maxOutputTokens: 512,
+            temperature: 0.6,
+          },
+        }),
+      {
+        onRetry: (attempt, retryErr) =>
+          logger.warn({
+            scope: SCOPE,
+            event: 'gemini_retry',
+            userId: user.id,
+            attempt,
+            err: retryErr,
+          }),
       },
-    });
+    );
 
     const summary = response.text ?? 'No se ha podido generar el resumen.';
     const generatedAt = new Date().toISOString();
@@ -128,8 +145,7 @@ export async function GET(request: NextRequest) {
       durationMs: Date.now() - startedAt,
       err,
     });
-    const msg = err instanceof Error ? err.message : 'AI service error';
-    return jsonError(msg, 500);
+    return jsonError(mapGeminiErrorToUserMessage(err), 500);
   }
 }
 

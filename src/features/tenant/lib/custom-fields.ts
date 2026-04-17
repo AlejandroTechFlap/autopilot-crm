@@ -47,6 +47,9 @@ export function mapTenantRow(row: TenantConfigRow): TenantConfig {
     feat_admin_scripts: row.feat_admin_scripts,
     feat_notifications: row.feat_notifications,
     feat_empresa_task_cal: row.feat_empresa_task_cal,
+    feat_ai_lead_capture: row.feat_ai_lead_capture,
+    feat_ai_next_action: row.feat_ai_next_action,
+    feat_ai_command_palette: row.feat_ai_command_palette,
   };
   return {
     id: row.id,

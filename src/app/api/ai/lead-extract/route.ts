@@ -24,6 +24,10 @@ import {
   parseLeadExtractResponse,
   LeadFieldsSchema,
 } from '@/features/ai-chat/lib/lead-extract';
+import {
+  generateWithRetry,
+  mapGeminiErrorToUserMessage,
+} from '@/features/ai-chat/lib/retry';
 
 const SCOPE = 'api.ai.lead-extract';
 
@@ -56,15 +60,28 @@ export async function POST(request: Request) {
     const model = getModel();
     const prompt = buildLeadExtractPrompt(text, currentData);
 
-    const response = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: {
-        maxOutputTokens: 1024,
-        temperature: 0.2,
-        responseMimeType: 'application/json',
+    const response = await generateWithRetry(
+      () =>
+        ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            maxOutputTokens: 1024,
+            temperature: 0.2,
+            responseMimeType: 'application/json',
+          },
+        }),
+      {
+        onRetry: (attempt, retryErr) =>
+          logger.warn({
+            scope: SCOPE,
+            event: 'gemini_retry',
+            userId: user.id,
+            attempt,
+            err: retryErr,
+          }),
       },
-    });
+    );
 
     const raw = response.text ?? '';
     const result = parseLeadExtractResponse(raw);
@@ -88,7 +105,6 @@ export async function POST(request: Request) {
       durationMs: Date.now() - startedAt,
       err,
     });
-    const msg = err instanceof Error ? err.message : 'AI service error';
-    return jsonError(msg, 500);
+    return jsonError(mapGeminiErrorToUserMessage(err), 500);
   }
 }

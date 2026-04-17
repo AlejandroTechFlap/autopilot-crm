@@ -37,6 +37,10 @@ import {
   MAX_TURNS,
 } from '@/features/ai-chat/lib/gemini';
 import { extractModelTurn, runClosingCall } from '@/features/ai-chat/lib/turn';
+import {
+  generateWithRetry,
+  mapGeminiErrorToUserMessage,
+} from '@/features/ai-chat/lib/retry';
 
 const SCOPE = 'api.chat';
 
@@ -93,16 +97,30 @@ export async function POST(request: Request) {
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       turnsUsed = turn + 1;
 
-      const res = await ai.models.generateContent({
-        model,
-        contents,
-        config: {
-          systemInstruction: systemPrompt,
-          tools: [{ functionDeclarations: declarations }],
-          maxOutputTokens: 2048,
-          temperature: 0.7,
+      const res = await generateWithRetry(
+        () =>
+          ai.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction: systemPrompt,
+              tools: [{ functionDeclarations: declarations }],
+              maxOutputTokens: 2048,
+              temperature: 0.7,
+            },
+          }),
+        {
+          onRetry: (attempt, retryErr) =>
+            logger.warn({
+              scope: SCOPE,
+              event: 'gemini_retry',
+              userId: user.id,
+              turn,
+              attempt,
+              err: retryErr,
+            }),
         },
-      });
+      );
 
       const calls = res.functionCalls ?? [];
 
@@ -161,7 +179,17 @@ export async function POST(request: Request) {
       });
       try {
         const closingText = await runClosingCall(
-          (req) => ai.models.generateContent(req),
+          (req) =>
+            generateWithRetry(() => ai.models.generateContent(req), {
+              onRetry: (attempt, retryErr) =>
+                logger.warn({
+                  scope: SCOPE,
+                  event: 'gemini_retry_closing',
+                  userId: user.id,
+                  attempt,
+                  err: retryErr,
+                }),
+            }),
           { model, systemPrompt, contents },
         );
         if (closingText) {
@@ -230,7 +258,6 @@ export async function POST(request: Request) {
       durationMs: Date.now() - startedAt,
       err,
     });
-    const msg = err instanceof Error ? err.message : 'AI service error';
-    return jsonError(msg, 500);
+    return jsonError(mapGeminiErrorToUserMessage(err), 500);
   }
 }

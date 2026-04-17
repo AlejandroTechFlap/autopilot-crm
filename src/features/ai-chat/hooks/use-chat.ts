@@ -82,10 +82,15 @@ export function useChat(): UseChatReturn {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Request failed' }));
+        const err = await res
+          .json()
+          .catch(() => ({ error: 'No he podido contactar con el servicio de IA.' }));
         setMessages((prev) => [
           ...prev,
-          { role: 'model', text: `Error: ${err.error ?? 'Something went wrong'}` },
+          {
+            role: 'model',
+            text: err.error ?? 'Ha ocurrido un error inesperado. Vuelve a intentarlo.',
+          },
         ]);
         setIsStreaming(false);
         return;
@@ -120,7 +125,7 @@ export function useChat(): UseChatReturn {
           try {
             const parsed = JSON.parse(payload);
             if (parsed.error) {
-              assistantText += `\n\nError: ${parsed.error}`;
+              assistantText += `\n\n${parsed.error}`;
             } else if (parsed.text) {
               assistantText += parsed.text;
             }
@@ -169,7 +174,7 @@ export function useChat(): UseChatReturn {
       } else {
         setMessages((prev) => [
           ...prev.filter((m) => m.text !== ''),
-          { role: 'model', text: 'Connection error. Please try again.' },
+          { role: 'model', text: 'Error de conexión con el servicio de IA. Vuelve a intentarlo.' },
         ]);
       }
     } finally {
